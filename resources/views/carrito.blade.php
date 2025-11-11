@@ -1,61 +1,76 @@
 @extends('layouts.app')
 
-@section('title', 'Carrito de Compras')
+@section('title', 'Tu Carrito | Sal & Sabor')
 
 @section('content')
-<div class="container">
-    <h2 class="text-center text-danger mb-4">Carrito de Compras</h2>
+<div class="container py-5">
+    <h1 class="text-center mb-5">Tu Carrito</h1>
 
-    @if(empty($carrito))
-        <div class="alert alert-warning text-center">
-            Tu carrito está vacío. Agrega productos desde el menú.
-        </div>
-        <div class="text-center">
-            <a href="/menu" class="btn btn-outline-danger">Volver al Menú</a>
-        </div>
-    @else
-        <table class="table table-bordered table-striped align-middle">
-            <thead class="table-dark text-center">
-                <tr>
-                    <th>Producto</th>
-                    <th>Precio</th>
-                    <th>Cantidad</th>
-                    <th>Subtotal</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $total = 0; @endphp
-                @foreach($carrito as $id => $item)
-                    @php $subtotal = $item['precio'] * $item['cantidad']; $total += $subtotal; @endphp
+    {{-- Si hay productos en el carrito --}}
+    @if(session('carrito') && count(session('carrito')) > 0)
+        <div class="table-responsive">
+            <table class="table table-striped text-center align-middle shadow-sm">
+                <thead class="table-dark">
                     <tr>
-                        <td>{{ $item['nombre'] }}</td>
-                        <td>S/ {{ number_format($item['precio'], 2) }}</td>
-                        <td>{{ $item['cantidad'] }}</td>
-                        <td>S/ {{ number_format($subtotal, 2) }}</td>
-                        <td class="text-center">
-                            <form action="/carrito/eliminar" method="POST">
-                                @csrf
-                                <input type="hidden" name="id" value="{{ $id }}">
-                                <button class="btn btn-outline-danger btn-sm">Eliminar</button>
-                            </form>
-                        </td>
+                        <th>Producto</th>
+                        <th>Precio (S/)</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal (S/)</th>
+                        <th>Acción</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @php $total = 0; @endphp
+                    @foreach(session('carrito') as $id => $item)
+                        @php 
+                            $subtotal = $item['precio'] * $item['cantidad']; 
+                            $total += $subtotal;
+                        @endphp
+                        <tr>
+                            <td class="fw-semibold">{{ $item['nombre'] }}</td>
+                            <td>{{ number_format($item['precio'], 2) }}</td>
+                            <td>{{ $item['cantidad'] }}</td>
+                            <td>{{ number_format($subtotal, 2) }}</td>
+                            <td>
+                                {{-- Botón eliminar producto individual --}}
+                                <form action="{{ route('carrito.eliminar', ['id' => $id]) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
+        {{-- TOTAL --}}
         <div class="text-end mt-4">
             <h4 class="fw-bold">Total: S/ {{ number_format($total, 2) }}</h4>
         </div>
 
-        <div class="d-flex justify-content-between mt-4">
-            <form action="/carrito/vaciar" method="POST">
+        {{-- BOTONES --}}
+        <div class="d-flex justify-content-center mt-4 gap-3 flex-wrap">
+            <a href="{{ route('menu') }}" class="btn btn-secondary">Seguir comprando</a>
+
+            {{-- Vaciar carrito --}}
+            <form action="{{ route('vaciar') }}" method="POST" onsubmit="return confirm('¿Seguro que deseas vaciar el carrito?');">
                 @csrf
-                <button class="btn btn-outline-danger">Vaciar Carrito</button>
+                @method('DELETE')
+                <button type="submit" class="btn btn-warning">Vaciar carrito</button>
             </form>
 
-            <a href="{{ route('pago') }}" class="btn btn-success">Continuar al Pago</a>
+            {{-- Ir al pago --}}
+            <a href="{{ route('pago') }}" class="btn btn-success">Continuar al pago</a>
+        </div>
+    @else
+        {{-- CARRITO VACÍO --}}
+        <div class="alert alert-info text-center mt-5">
+            Tu carrito está vacío.
+        </div>
+        <div class="text-center mt-3">
+            <a href="{{ route('menu') }}" class="btn btn-primary">Ver menú</a>
         </div>
     @endif
 </div>

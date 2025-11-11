@@ -10,38 +10,29 @@
 @endif
 
 <div class="row g-4">
-
-    @php
-        $productos = [
-            ['id' => 1, 'nombre' => 'Pollo a la Brasa', 'precio' => 25, 'img' => 'https://www.eatperu.com/wp-content/uploads/2019/10/pollo-a-la-brasa-with-salad-and-dipping-sauces.jpg'],
-            ['id' => 2, 'nombre' => 'Lomo Saltado', 'precio' => 30, 'img' => 'https://assets.afcdn.com/recipe/20210416/119490_w3072h2304c1cx363cy240.jpg'],
-            ['id' => 3, 'nombre' => 'Ceviche Clásico', 'precio' => 28, 'img' => 'https://i.pinimg.com/originals/71/ca/eb/71caeb0ebe4d90ec278ebb26cdcac1df.png']
-        ];
-    @endphp
-
-    @foreach($productos as $producto)
+    @foreach(\App\Models\Plato::all() as $plato)
     <div class="col-md-4">
-        <div class="card h-100">
-            <img src="{{ $producto['img'] }}" class="card-img-top" alt="{{ $producto['nombre'] }}">
+        <div class="card h-100 shadow-sm">
+            <img src="{{ asset('images/' . $plato->imagen) }}" class="card-img-top" alt="{{ $plato->nombre }}" style="height:200px; object-fit:cover;">
             <div class="card-body text-center">
-                <h5 class="card-title">{{ $producto['nombre'] }}</h5>
-                <p class="fw-bold text-danger">S/ {{ number_format($producto['precio'], 2) }}</p>
+                <h5 class="card-title">{{ $plato->nombre }}</h5>
+                <p class="fw-bold text-danger">S/ {{ number_format($plato->precio, 2) }}</p>
 
-                <form action="/carrito/agregar" method="POST">
+                <form action="{{ route('carrito.agregar') }}" method="POST">
                     @csrf
-                    <input type="hidden" name="id" value="{{ $producto['id'] }}">
-                    <input type="hidden" name="nombre" value="{{ $producto['nombre'] }}">
-                    <input type="hidden" name="precio" value="{{ $producto['precio'] }}">
-                    <button type="submit" class="btn btn-primary">Agregar al carrito </button>
+                    <input type="hidden" name="id" value="{{ $plato->id }}">
+                    <input type="hidden" name="nombre" value="{{ $plato->nombre }}">
+                    <input type="hidden" name="precio" value="{{ $plato->precio }}">
+                    <input type="hidden" name="cantidad" value="1">
+                    <button type="submit" class="btn btn-danger w-100">Agregar al carrito</button>
                 </form>
             </div>
         </div>
     </div>
     @endforeach
-
 </div>
 
 <div class="text-center mt-5">
-    <a href="{{ route('carrito') }}" class="btn btn-success">Ver carrito </a>
+    <a href="{{ route('carrito') }}" class="btn btn-success btn-lg">Ver carrito</a>
 </div>
 @endsection

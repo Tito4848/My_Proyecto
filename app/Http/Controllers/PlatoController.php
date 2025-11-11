@@ -9,10 +9,10 @@ class PlatoController extends Controller
 {
     public function index()
     {
-        // Obtiene todos los platos de la base de datos
+        // Obtener todos los platos
         $platos = Plato::all();
 
-        // Los envía a la vista
+        // Enviar los platos a la vista
         return view('platos.index', compact('platos'));
     }
 }

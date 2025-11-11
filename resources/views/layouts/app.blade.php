@@ -1,73 +1,56 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Restaurante Sal & Sabor')</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>@yield('title', config('app.name', 'Sal & Sabor'))</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap (para tus vistas personalizadas) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background-color: #fff5f0;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        nav {
-            background-color: #8b4513;
-        }
-        nav a {
-            color: white !important;
-        }
-        footer {
-            background: #8b4513;
-            color: white;
-            text-align: center;
-            padding: 1rem;
-            margin-top: 2rem;
-        }
-        .hero {
-            background: url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38') center/cover;
-            height: 350px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
-        }
-        input.form-control {
-            border-radius: 10px;
-            border: 1px solid #ddd;
-        }
-        input.form-control:focus {
-            border-color: #b22222;
-            box-shadow: 0 0 4px rgba(178, 34, 34, 0.3);
-        }
-    </style>
+
+    <!-- Scripts -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body>
+<body class="font-sans antialiased">
+    <div class="min-h-screen bg-gray-100">
 
-<nav class="navbar navbar-expand-lg navbar-dark px-4">
-  <a class="navbar-brand" href="/">Sal & Sabor</a>
-  <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav ms-auto">
-      <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
-      <li class="nav-item"><a class="nav-link" href="/menu">Menú</a></li>
-      <li class="nav-item"><a class="nav-link" href="/reserva">Reservar</a></li>
-      <li class="nav-item"><a class="nav-link" href="/contacto">Contacto</a></li>
-      <li class="nav-item"><a class="nav-link" href="{{ route('carrito') }}">Carrito</a></li>
-    </ul>
-  </div>
-</nav>
+        {{-- ✅ Navbar común para todo el sitio --}}
+        @include('layouts.navigation')
 
-<div class="container mt-4">
-    @yield('content')
-</div>
+        {{-- ✅ Encabezado opcional (usado por Breeze) --}}
+        @isset($header)
+            <header class="bg-white shadow">
+                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    {{ $header }}
+                </div>
+            </header>
+        @endisset
 
-<footer>
-    <p>© 2025 Sal & Sabor - Todos los derechos reservados</p>
-</footer>
+        
+        <main class="py-4">
+            @if (isset($slot))
+                {{-- Breeze usa $slot --}}
+                {{ $slot }}
+            @else
+               
+                    @yield('content')
+                </div>
+            @endif
+        </main>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+        <footer class="text-center py-4 bg-white shadow-sm mt-auto">
+            <small>© {{ date('Y') }} Sal & Sabor — Todos los derechos reservados.</small>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

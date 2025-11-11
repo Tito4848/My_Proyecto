@@ -16,21 +16,13 @@
         @foreach($platos as $plato)
             <div class="col-md-4">
                 <div class="card h-100 shadow-sm">
-                    @if($plato->imagen)
-                        <img src="{{ asset('images/' . $plato->imagen) }}" 
-                             class="card-img-top" 
-                             alt="{{ $plato->nombre }}">
-                    @else
-                        <img src="https://via.placeholder.com/400x250?text=Sin+imagen" 
-                             class="card-img-top" 
-                             alt="Sin imagen">
-                    @endif
-
+                    <img src="{{ asset('images/' . $plato->imagen) }}" 
+                         class="card-img-top" 
+                         alt="{{ $plato->nombre }}">
                     <div class="card-body text-center">
                         <h5 class="card-title">{{ $plato->nombre }}</h5>
                         <p class="text-muted">{{ $plato->descripcion }}</p>
                         <p class="fw-bold text-danger fs-5">S/ {{ number_format($plato->precio, 2) }}</p>
-
                         <form action="{{ route('carrito.agregar') }}" method="POST">
                             @csrf
                             <input type="hidden" name="id" value="{{ $plato->id }}">
