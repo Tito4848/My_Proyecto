@@ -31,6 +31,13 @@ class PlatoSeeder extends Seeder
                 'categoria' => 'Platos principales',
                 'imagen' => 'lomo_saltado.jpg',
             ],
+               [
+                'nombre' => 'Nuevo Plato',
+                'descripcion' => 'Trozos de carne salteados con cebolla, tomate y papas fritas.',
+                'precio' => 27.00,
+                'categoria' => 'Platos principales',
+                'imagen' => 'lomo_saltado.jpg',
+            ],
         ];
 
         foreach ($platos as $plato) {
