@@ -66,7 +66,7 @@
   </div>
   <div class="col-md-6 d-flex flex-column justify-content-center">
     <h3 class="text-danger fw-bold">La favorita de los fans: Pollo a la Brasa</h3>
-    <p>Preparado al estilo peruano con papas doradas y ají especial. ¡Pide el tuyo ahora!</p>
+    <p>El Pollo a la Brasa es un clásico de la gastronomía peruana, reconocido por su sabor jugoso y su piel dorada y crujiente. Se prepara marinando el pollo con una mezcla de especias tradicionales y luego se cocina lentamente en horno o parrilla, logrando un equilibrio perfecto entre aroma y textura. Se sirve acompañado de papas fritas y ensalada, y a menudo se acompaña de salsas como ají verde o mayonesa, convirtiéndolo en un plato delicioso y representativo del Perú. ¡Pide el tuyo ahora!</p>
     <a href="{{ route('menu') }}" class="btn btn-danger w-50">Ver más</a>
   </div>
 </div>
