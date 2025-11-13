@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    <!-- Bootstrap (para tus vistas personalizadas) -->
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Scripts -->
@@ -20,30 +20,11 @@
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-gray-100">
 
-        {{-- ✅ Navbar común para todo el sitio --}}
         @include('layouts.navigation')
 
-        {{-- ✅ Encabezado opcional (usado por Breeze) --}}
-        @isset($header)
-            <header class="bg-white shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    {{ $header }}
-                </div>
-            </header>
-        @endisset
-
-        
         <main class="py-4">
-            @if (isset($slot))
-                {{-- Breeze usa $slot --}}
-                {{ $slot }}
-            @else
-               
-                    @yield('content')
-                </div>
-            @endif
+            @yield('content')
         </main>
-
 
         <footer class="text-center py-4 bg-white shadow-sm mt-auto">
             <small>© {{ date('Y') }} Sal & Sabor — Todos los derechos reservados.</small>
