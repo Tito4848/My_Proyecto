@@ -9,9 +9,17 @@
     <div class="alert alert-success">{{ session('success') }}</div>
 @endif
 
+<div class="text-center mb-4">
+    <button class="btn btn-primary filter-btn" data-categoria="todos">Todos</button>
+    <button class="btn btn-secondary filter-btn" data-categoria="Entradas">Entradas</button>
+    <button class="btn btn-secondary filter-btn" data-categoria="Platos principales">Platos Principales</button>
+    <button class="btn btn-secondary filter-btn" data-categoria="Postres">Postres</button>
+    <button class="btn btn-secondary filter-btn" data-categoria="Bebidas">Bebidas</button>
+</div>
+
 <div class="row g-4">
     @forelse($platos as $plato)
-        <div class="col-md-4">
+        <div class="col-md-4 plato" data-categoria="{{ $plato->categoria ?? 'Plato Principal' }}">
             <div class="card h-100 shadow-sm">
                 <img src="{{ asset('images/' . $plato->imagen) }}" class="card-img-top" alt="{{ $plato->nombre }}" style="height:200px; object-fit:cover;">
                 <div class="card-body text-center">
@@ -28,6 +36,7 @@
                     </form>
                 </div>
             </div>
+            
         </div>
     @empty
         <p class="text-center">No hay platos disponibles.</p>
@@ -37,4 +46,27 @@
 <div class="text-center mt-5">
     <a href="{{ route('carrito') }}" class="btn btn-success btn-lg">Ver carrito</a>
 </div>
+<script>
+    const botones = document.querySelectorAll('.filter-btn');
+    const platos = document.querySelectorAll('.plato');
+
+    botones.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const categoria = btn.getAttribute('data-categoria');
+
+            platos.forEach(plato => {
+                if(categoria.toLowerCase() === 'todos' || plato.dataset.categoria.toLowerCase() === categoria.toLowerCase()) {
+                    plato.style.display = 'block';
+                } else {
+                    plato.style.display = 'none';
+                }
+            });
+
+            // Cambiar apariencia de botones
+            botones.forEach(b => b.classList.remove('btn-primary'));
+            botones.forEach(b => b.classList.add('btn-secondary'));
+            btn.classList.add('btn-primary');
+        });
+    });
+</script>
 @endsection
