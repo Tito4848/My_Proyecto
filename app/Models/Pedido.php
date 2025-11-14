@@ -7,10 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 class Pedido extends Model
 {
     protected $fillable = [
-        'nombre', 'direccion', 'telefono', 'metodo_pago', 'carrito',
+        'user_id',
+        'nombre',
+        'direccion',
+        'telefono',
+        'metodo_pago',
+        'estado',
+        'total',
     ];
 
-    protected $casts = [
-        'carrito' => 'array', 
-    ];
+    public function platos()
+    {
+        return $this->belongsToMany(Plato::class, 'pedido_plato')
+                    ->withPivot('cantidad', 'precio')
+                    ->withTimestamps();
+    }
+
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
+

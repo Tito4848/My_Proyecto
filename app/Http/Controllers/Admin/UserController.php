@@ -25,14 +25,53 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
+            'is_admin' => 'nullable|boolean',
         ]);
 
         User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'name'      => $request->name,
+            'email'     => $request->email,
+            'password'  => bcrypt($request->password),
+            'is_admin'  => $request->is_admin ? 1 : 0,
         ]);
 
-        return redirect()->route('admin.usuarios.index')->with('success', 'Usuario creado correctamente');
+        return redirect()->route('admin.usuarios.index')
+            ->with('success', 'Usuario creado correctamente');
+    }
+
+    public function edit(User $usuario)
+    {
+        return view('admin.usuarios.edit', compact('usuario'));
+    }
+
+    public function update(Request $request, User $usuario)
+    {
+        $request->validate([
+            'name' => 'required',
+            'email' => "required|email|unique:users,email,$usuario->id",
+            'password' => 'nullable|min:6',
+            'is_admin' => 'nullable|boolean',
+        ]);
+
+        $usuario->name = $request->name;
+        $usuario->email = $request->email;
+        $usuario->is_admin = $request->is_admin ? 1 : 0;
+
+        if ($request->password) {
+            $usuario->password = bcrypt($request->password);
+        }
+
+        $usuario->save();
+
+        return redirect()->route('admin.usuarios.index')
+            ->with('success', 'Usuario actualizado correctamente');
+    }
+
+    public function destroy(User $usuario)
+    {
+        $usuario->delete();
+
+        return redirect()->route('admin.usuarios.index')
+            ->with('success', 'Usuario eliminado correctamente');
     }
 }

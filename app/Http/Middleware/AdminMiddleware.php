@@ -9,9 +9,11 @@ class AdminMiddleware
 {
     public function handle($request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->is_admin) {
-            return $next($request);
+        if (!auth()->user() || !auth()->user()->is_admin) {
+            abort(403, 'No tienes permisos para acceder');
         }
-        abort(403, 'Acceso denegado');
+
+        return $next($request);
     }
+
 }

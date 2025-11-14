@@ -13,13 +13,23 @@ use App\Http\Controllers\Admin\PlatoAdminController;
 use App\Http\Controllers\Admin\PedidoController as AdminPedidoController;
 use App\Http\Controllers\Admin\UserController;
 
-Route::prefix('admin')->middleware(['auth', 'App\Http\Middleware\AdminMiddleware'])->group(function () {
-    Route::get('/usuarios', [UserController::class, 'index'])->name('admin.usuarios.index');
-    Route::get('/usuarios/create', [UserController::class, 'create'])->name('admin.usuarios.create');
-    Route::post('/usuarios', [UserController::class, 'store'])->name('admin.usuarios.store');
-    Route::get('/usuarios/{id}/edit', [UserController::class, 'edit'])->name('admin.usuarios.edit');
-    Route::put('/usuarios/{id}', [UserController::class, 'update'])->name('admin.usuarios.update');
-    Route::delete('/usuarios/{id}', [UserController::class, 'destroy'])->name('admin.usuarios.destroy');
+/*
+|--------------------------------------------------------------------------
+| Panel de Administración (Correcto)
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')
+    ->middleware(['auth', AdminMiddleware::class])
+    ->name('admin.')
+    ->group(function () {
+
+    Route::get('/dashboard', [AdminController::class, 'index'])
+        ->name('dashboard');
+
+    Route::resource('platos', PlatoAdminController::class);
+    Route::resource('pedidos', AdminPedidoController::class);
+    Route::resource('usuarios', UserController::class);
 });
 
 /*
@@ -27,6 +37,7 @@ Route::prefix('admin')->middleware(['auth', 'App\Http\Middleware\AdminMiddleware
 | Rutas Públicas
 |--------------------------------------------------------------------------
 */
+
 Route::get('/', function () {
     return view('inicio');
 })->name('inicio');
@@ -50,9 +61,10 @@ Route::post('/delivery', [DeliveryController::class, 'store'])->name('delivery.s
 
 /*
 |--------------------------------------------------------------------------
-| Dashboard y perfil (requiere autenticación)
+| Dashboard y perfil (usuarios normales)
 |--------------------------------------------------------------------------
 */
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () { return view('dashboard'); })->name('dashboard');
 
@@ -60,20 +72,5 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-/*
-|--------------------------------------------------------------------------
-| Panel de administración (requiere Admin)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', AdminMiddleware::class])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-
-    // Rutas con nombres para usar en blade
-    Route::resource('/admin/platos', PlatoAdminController::class)->names('platos');
-    Route::resource('/admin/pedidos', AdminPedidoController::class)->names('pedidos');
-    Route::resource('/admin/usuarios', AdminUserController::class)->names('usuarios');
-});
-
 
 require __DIR__ . '/auth.php';
