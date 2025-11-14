@@ -2,30 +2,23 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Pedido extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'user_id',
         'nombre',
         'direccion',
         'telefono',
         'metodo_pago',
-        'estado',
-        'total',
+        'carrito',
     ];
 
-    public function platos()
-    {
-        return $this->belongsToMany(Plato::class, 'pedido_plato')
-                    ->withPivot('cantidad', 'precio')
-                    ->withTimestamps();
-    }
-
-    public function usuario()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
+    // Si tu columna carrito es json, puedes usar:
+    protected $casts = [
+        'carrito' => 'array',
+    ];
 }
-
