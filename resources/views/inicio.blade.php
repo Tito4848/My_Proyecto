@@ -115,19 +115,7 @@
                 </p>
                 <a href="{{ route('menu') }}" class="btn btn-red px-4">Ver más</a>
             </div>
-
-        </div>
-    </div>
-</section>
-
-<!-- =========================
-  OFERTA DEL DÍA
-========================= -->
-<section class="py-5">
-    <div class="container">
-        <div class="row align-items-center">
-
-            <!-- Texto -->
+                   <!-- Texto -->
             <div class="col-md-6 soft-pink-2 p-4 rounded shadow">
                 <h3 class="section-title">Oferta del Día</h3>
                 <p>
@@ -136,16 +124,18 @@
                 </p>
                 <a href="{{ route('menu') }}" class="btn btn-red px-4">Pedir</a>
             </div>
-
-            <!-- Imagen -->
+               <!-- Imagen -->
             <div class="col-md-6 mt-3 mt-md-0">
                 <img src="https://imgs.search.brave.com/8IJ5H5asWfivMzgxmAilxtAxTR32urnOh3c-jscMrRU/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzEyLzM5LzMyLzcw/LzM2MF9GXzEyMzkz/MjcwODdfSUVRM3VH/bDhETXdQY1BUTHFp/QmdMeFd0b0lleU1k/aWEuanBn"
                      class="img-fluid rounded shadow">
             </div>
-
         </div>
     </div>
 </section>
+
+<!-- =========================
+  OFERTA DEL DÍA
+========================= -->
 
 <!-- =========================
       RESERVA UNA MESA
