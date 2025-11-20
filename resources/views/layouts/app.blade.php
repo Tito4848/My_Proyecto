@@ -26,12 +26,20 @@
             @yield('content')
         </main>
 
-        <footer class="text-center py-4 bg-white shadow-sm mt-auto">
-            <small>© {{ date('Y') }} Sal & Sabor — Todos los derechos reservados.</small>
-        </footer>
+        <footer class="bg-gray-800 text-white py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-center items-center">
+          
+            <div>
+                <small>© {{ date('Y') }} Sal & Sabor — Todos los derechos reservados.</small>
+            </div>
+            
+        </div>
     </div>
+</footer>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

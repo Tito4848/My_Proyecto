@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\Pedido;
 
 class ProfileController extends Controller
 {
@@ -16,8 +17,10 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $pedidos = Pedido::where('user_id', $request->user()->id)->get();
         return view('profile.edit', [
             'user' => $request->user(),
+            'pedidos' => $pedidos,
         ]);
     }
 

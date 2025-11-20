@@ -51,5 +51,10 @@ class User extends Authenticatable
     {
         return $this->is_admin === 1;
     }
+    public function pedidos()
+{
+    return $this->hasMany(\App\Models\Pedido::class);
+}
+
 
 }

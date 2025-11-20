@@ -91,4 +91,17 @@ class PedidoController extends Controller
             ->route('admin.pedidos.index')
             ->with('success', 'Pedido actualizado correctamente');
     }
+    public function destroy($id)
+{
+
+    $pedido = Pedido::find($id);
+
+    if (!$pedido) {
+        return redirect()->route('admin.pedidos.index')->with('error', 'Pedido no encontrado');
+    }
+
+    $pedido->delete();
+
+    return redirect()->route('admin.pedidos.index')->with('success', 'Pedido eliminado correctamente');
+}
 }

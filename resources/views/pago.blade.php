@@ -9,7 +9,7 @@
             <div class="card-body">
                 <h3 class="text-center text-danger mb-4">Pago con Tarjeta</h3>
 
-                <form action="/pago/procesar" method="POST">
+                <form action="{{ route('pago.procesar') }}" method="POST">
                     @csrf
 
                     <div class="mb-3">

@@ -62,7 +62,8 @@
             </form>
 
             {{-- Ir al pago --}}
-            <a href="{{ route('pago') }}" class="btn btn-success">Continuar al pago</a>
+            <a href="{{ route('pago') }}" class="btn btn-danger">Continuar con el pago</a>
+
         </div>
     @else
         {{-- CARRITO VACÍO --}}
