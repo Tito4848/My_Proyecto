@@ -92,5 +92,6 @@ Route::post('/pago/procesar', [PedidoController::class, 'procesarPago'])
     ->middleware('auth')
     ->name('pago.procesar');
 
+Route::get('/menu/{plato}', [PlatoController::class, 'show'])->name('menu.show');
 
 require __DIR__ . '/auth.php';
