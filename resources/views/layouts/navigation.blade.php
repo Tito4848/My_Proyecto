@@ -3,12 +3,19 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('inicio') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
-                    </a>
-                </div>
+             <!-- Logo -->
+<div class="shrink-0 flex items-center">
+    <a href="{{ route('inicio') }}" class="flex items-center gap-2">
+        <img src="https://imgs.search.brave.com/btrMHuxlfUb36YR_434wHTkgfmtwIeoScOKqnlqAhB0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4u/aWNvbnNjb3V0LmNv/bS9pY29uL2ZyZWUv/cG5nLTI1Ni9mcmVl/LXJlc3RhdXJhbnRl/LWljb24tc3ZnLWRv/d25sb2FkLXBuZy03/Mzc5MzQ3LnBuZz9m/PXdlYnAmdz0xMjg" 
+             class="h-8 w-8" 
+             alt="Logo">
+
+        <span class="font-bold text-lg text-gray-700">
+            Sal & Sabor
+        </span>
+    </a>
+</div>
+
 
                 <!-- Navigation Links (Left side) -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
@@ -165,4 +172,4 @@
             @endauth
         </div>
     </div>
-</nav>
+</nav>        
