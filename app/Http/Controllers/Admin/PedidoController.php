@@ -81,14 +81,22 @@ class PedidoController extends Controller
     {
         $request->validate([
             'estado' => ['required'],
+            'nombre' => ['sometimes', 'required', 'string', 'max:255'],
+            'direccion' => ['sometimes', 'required', 'string', 'max:255'],
+            'telefono' => ['sometimes', 'required', 'string', 'max:20'],
+            'metodo_pago' => ['sometimes', 'required', 'string'],
         ]);
 
-        $pedido->update([
-            'estado' => $request->estado,
-        ]);
+        $pedido->update($request->only([
+            'estado',
+            'nombre',
+            'direccion',
+            'telefono',
+            'metodo_pago'
+        ]));
 
         return redirect()
-            ->route('admin.pedidos.index')
+            ->route('admin.pedidos.show', $pedido)
             ->with('success', 'Pedido actualizado correctamente');
     }
     public function destroy($id)

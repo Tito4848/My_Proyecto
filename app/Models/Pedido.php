@@ -26,8 +26,14 @@ class Pedido extends Model
         'carrito' => 'array',
     ];
     public function usuario()
-{
-    return $this->belongsTo(\App\Models\User::class, 'user_id');
-}
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
 
+    public function platos()
+    {
+        return $this->belongsToMany(Plato::class, 'pedido_plato')
+                    ->withPivot('cantidad', 'precio')
+                    ->withTimestamps();
+    }
 }

@@ -8,6 +8,8 @@ use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\AdminController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\PedidoController;
+use App\Http\Controllers\ContactoController;
+use App\Http\Controllers\ReservaController;
 
 
 // Controladores Admin
@@ -54,8 +56,10 @@ Route::delete('/carrito', [CarritoController::class, 'vaciar'])->name('vaciar');
 
 
 // Contacto y reserva
-Route::get('/contacto', function () { return view('contacto'); })->name('contacto');
-Route::get('/reserva', function () { return view('reserva'); })->name('reserva');
+Route::get('/contacto', [ContactoController::class, 'index'])->name('contacto');
+Route::post('/contacto/enviar', [ContactoController::class, 'enviar'])->name('contacto.enviar');
+Route::get('/reserva', [ReservaController::class, 'index'])->name('reserva');
+Route::post('/reserva', [ReservaController::class, 'store'])->name('reserva.store');
 
 // Delivery
 Route::get('/delivery', [DeliveryController::class, 'index'])->name('delivery');

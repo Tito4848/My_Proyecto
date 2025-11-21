@@ -29,13 +29,35 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $user->fill($request->validated());
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // Manejar subida de avatar
+        if ($request->hasFile('avatar')) {
+            // Eliminar avatar anterior si existe
+            if ($user->avatar && file_exists(public_path('storage/avatars/' . $user->avatar))) {
+                @unlink(public_path('storage/avatars/' . $user->avatar));
+            }
+
+            // Guardar nuevo avatar
+            $avatar = $request->file('avatar');
+            $avatarName = time() . '_' . $user->id . '.' . $avatar->getClientOriginalExtension();
+            
+            // Asegurar que el directorio existe
+            $avatarPath = public_path('storage/avatars');
+            if (!file_exists($avatarPath)) {
+                mkdir($avatarPath, 0755, true);
+            }
+            
+            $avatar->move($avatarPath, $avatarName);
+            $user->avatar = $avatarName;
         }
 
-        $request->user()->save();
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

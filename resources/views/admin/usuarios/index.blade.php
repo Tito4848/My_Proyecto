@@ -3,55 +3,90 @@
 @section('title', 'Gestión de Usuarios')
 
 @section('content')
-<div class="container mt-4">
-    <h2 class="mb-4">Gestión de Usuarios</h2>
+<div class="admin-header animate-fade-in">
+    <div>
+        <h1><i class="fas fa-users me-2 text-primary"></i>Gestión de Usuarios</h1>
+        <p class="text-muted mb-0">Administra usuarios y permisos</p>
+    </div>
+    <div>
+        <a href="{{ route('admin.usuarios.create') }}" class="btn btn-modern btn-primary hover-glow">
+            <i class="fas fa-user-plus me-2"></i>Nuevo Usuario
+        </a>
+    </div>
+</div>
 
-    <a href="{{ route('admin.usuarios.create') }}" class="btn btn-primary mb-3">Nuevo Usuario</a>
+    @if(session('success'))
+        <x-alert type="success">{{ session('success') }}</x-alert>
+    @endif
 
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
+    @if(session('error'))
+        <x-alert type="error">{{ session('error') }}</x-alert>
+    @endif
+
+    <div class="admin-table animate-fade-in">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
             <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Rol</th>
-                <th class="text-center">Acciones</th>
+                    <th><i class="fas fa-user me-2"></i>Nombre</th>
+                    <th><i class="fas fa-envelope me-2"></i>Email</th>
+                    <th><i class="fas fa-shield-alt me-2"></i>Rol</th>
+                    <th class="text-center"><i class="fas fa-cog me-2"></i>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($usuarios as $usuario)
-                <tr>
-                    <td>{{ $usuario->name }}</td>
+                @forelse($usuarios as $usuario)
+                    <tr class="animate-fade-in">
+                        <td class="fw-semibold">
+                            <i class="fas fa-user-circle me-2 text-primary"></i>
+                            {{ $usuario->name }}
+                        </td>
                     <td>{{ $usuario->email }}</td>
 
-                    <!-- Mostrar rol correctamente -->
                     <td>
                         @if($usuario->is_admin)
-                            <span class="badge bg-success">Administrador</span>
+                                <span class="badge bg-success p-2">
+                                    <i class="fas fa-crown me-1"></i>Administrador
+                                </span>
                         @else
-                            <span class="badge bg-secondary">Usuario</span>
+                                <span class="badge bg-secondary p-2">
+                                    <i class="fas fa-user me-1"></i>Usuario
+                                </span>
                         @endif
                     </td>
 
-                    <td class="text-center">
+                        <td>
+                            <div class="d-flex gap-2 justify-content-center">
                         <a href="{{ route('admin.usuarios.edit', $usuario->id) }}"
-                           class="btn btn-warning btn-sm">
-                            Editar
+                                   class="btn btn-sm btn-modern btn-warning hover-scale"
+                                   title="Editar">
+                                    <i class="fas fa-edit"></i>
                         </a>
 
                         <form action="{{ route('admin.usuarios.destroy', $usuario->id) }}"
                               method="POST"
-                              class="d-inline-block"
-                              onsubmit="return confirm('¿Seguro que deseas eliminar este usuario?');">
+                                      class="d-inline"
+                                      onsubmit="return confirm('¿Estás seguro de eliminar este usuario?');">
                             @csrf
                             @method('DELETE')
-                            <button class="btn btn-danger btn-sm">
-                                Eliminar
+                                    <button type="submit" 
+                                            class="btn btn-sm btn-modern btn-danger hover-scale"
+                                            title="Eliminar">
+                                        <i class="fas fa-trash"></i>
                             </button>
                         </form>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-5">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p class="mb-0">No hay usuarios registrados</p>
                     </td>
                 </tr>
-            @endforeach
+                @endforelse
         </tbody>
     </table>
+    </div>
 </div>
 @endsection

@@ -7,9 +7,11 @@
     <h1 class="text-center mb-5">Nuestro Menú</h1>
 
     @if(session('success'))
-        <div class="alert alert-success text-center">
-            {{ session('success') }}
-        </div>
+        <x-alert type="success">{{ session('success') }}</x-alert>
+    @endif
+
+    @if(session('error'))
+        <x-alert type="error">{{ session('error') }}</x-alert>
     @endif
 
     <div class="row g-4">

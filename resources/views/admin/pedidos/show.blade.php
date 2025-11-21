@@ -4,121 +4,240 @@
 
 @section('content')
 
+<div class="admin-header animate-fade-in">
+    <div>
+        <h1><i class="fas fa-receipt me-2 text-primary"></i>Detalle del Pedido #{{ $pedido->id }}</h1>
+        <p class="text-muted mb-0">Fecha: {{ $pedido->created_at->format('d/m/Y H:i') }}</p>
+    </div>
+    <div>
+        <a href="{{ route('admin.pedidos.index') }}" class="btn btn-modern btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Volver
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Información del pedido -->
+    <div class="col-md-8">
+        <div class="modern-card p-4 animate-fade-in">
+            <h4 class="mb-4 fw-bold">
+                <i class="fas fa-user me-2 text-primary"></i>Datos del Cliente
+            </h4>
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3">
+                    <p class="mb-1 text-muted">Nombre</p>
+                    <p class="fw-bold mb-0">{{ $pedido->nombre }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="mb-1 text-muted">Teléfono</p>
+                    <p class="fw-bold mb-0">{{ $pedido->telefono }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="mb-1 text-muted">Dirección</p>
+                    <p class="fw-bold mb-0">{{ $pedido->direccion }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="mb-1 text-muted">Método de pago</p>
+                    <p class="fw-bold mb-0">
+                        <i class="fas fa-credit-card me-2"></i>{{ $pedido->metodo_pago }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platos del pedido -->
+        <div class="modern-card p-4 mt-4 animate-fade-in" style="animation-delay: 0.1s;">
+            <h4 class="mb-4 fw-bold">
+                <i class="fas fa-utensils me-2 text-primary"></i>Platos del Pedido
+            </h4>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Plato</th>
+                            <th class="text-center">Cantidad</th>
+                            <th class="text-end">Precio Unit.</th>
+                            <th class="text-end">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $items = [];
+                            // Intentar obtener desde la relación platos
+                            if($pedido->platos && $pedido->platos->count() > 0) {
+                                foreach($pedido->platos as $plato) {
+                                    $items[] = [
+                                        'nombre' => $plato->nombre,
+                                        'cantidad' => $plato->pivot->cantidad,
+                                        'precio' => $plato->pivot->precio,
+                                        'subtotal' => $plato->pivot->cantidad * $plato->pivot->precio
+                                    ];
+                                }
+                            } 
+                            // Si no hay relación, intentar desde carrito JSON
+                            elseif($pedido->carrito && is_array($pedido->carrito)) {
+                                $items = $pedido->carrito;
+                            }
+                        @endphp
+
+                        @forelse($items as $item)
+                            <tr>
+                                <td class="fw-semibold">
+                                    <i class="fas fa-utensils me-2 text-primary"></i>
+                                    {{ $item['nombre'] ?? 'N/A' }}
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge-modern bg-primary text-white">
+                                        {{ $item['cantidad'] ?? 0 }}
+                                    </span>
+                                </td>
+                                <td class="text-end">S/ {{ number_format($item['precio'] ?? 0, 2) }}</td>
+                                <td class="text-end fw-bold text-success">
+                                    S/ {{ number_format(($item['cantidad'] ?? 0) * ($item['precio'] ?? 0), 2) }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                                    <p class="mb-0">No hay platos registrados</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th colspan="3" class="text-end">Total:</th>
+                            <th class="text-end text-danger fs-5">S/ {{ number_format($pedido->total, 2) }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel lateral -->
+    <div class="col-md-4">
+        <!-- Estado del pedido -->
+        <div class="modern-card p-4 animate-fade-in" style="animation-delay: 0.2s;">
+            <h5 class="mb-4 fw-bold">
+                <i class="fas fa-info-circle me-2 text-primary"></i>Estado del Pedido
+            </h5>
+            
+            @php
+                $estadoColors = [
+                    'pendiente' => 'warning',
+                    'preparando' => 'info',
+                    'encamino' => 'primary',
+                    'entregado' => 'success',
+                ];
+                $estadoIcons = [
+                    'pendiente' => 'clock',
+                    'preparando' => 'utensils',
+                    'encamino' => 'truck',
+                    'entregado' => 'check-circle',
+                ];
+            @endphp
+
+            <div class="mb-4">
+                <span class="badge bg-{{ $estadoColors[$pedido->estado] ?? 'secondary' }} fs-6 p-3 w-100 d-block text-center mb-3">
+                    <i class="fas fa-{{ $estadoIcons[$pedido->estado] ?? 'info' }} me-2"></i>
+                    {{ ucfirst($pedido->estado) }}
+                </span>
+            </div>
+
+            <form action="{{ route('admin.pedidos.update', $pedido) }}" method="POST">
+                @csrf
+                @method('PUT')
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Cambiar Estado</label>
+                    <select name="estado" class="modern-input form-select @error('estado') is-invalid @enderror">
+                        <option value="pendiente" {{ $pedido->estado == 'pendiente' ? 'selected' : '' }}>
+                            ⏰ Pendiente
+                        </option>
+                        <option value="preparando" {{ $pedido->estado == 'preparando' ? 'selected' : '' }}>
+                            🍳 En preparación
+                        </option>
+                        <option value="encamino" {{ $pedido->estado == 'encamino' ? 'selected' : '' }}>
+                            🚚 En camino
+                        </option>
+                        <option value="entregado" {{ $pedido->estado == 'entregado' ? 'selected' : '' }}>
+                            ✅ Entregado
+                        </option>
+                    </select>
+                    @error('estado')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <button type="submit" class="btn btn-modern btn-primary w-100 hover-glow">
+                    <i class="fas fa-save me-2"></i>Actualizar Estado
+                </button>
+            </form>
+        </div>
+
+        <!-- Acciones -->
+        <div class="modern-card p-4 mt-4 animate-fade-in" style="animation-delay: 0.3s;">
+            <h5 class="mb-4 fw-bold">
+                <i class="fas fa-cog me-2 text-primary"></i>Acciones
+            </h5>
+            <div class="d-grid gap-2">
+                <button onclick="window.print()" class="btn btn-modern btn-secondary">
+                    <i class="fas fa-print me-2"></i>Imprimir Recibo
+                </button>
+                <a href="{{ route('admin.pedidos.edit', $pedido) }}" class="btn btn-modern btn-warning">
+                    <i class="fas fa-edit me-2"></i>Editar Pedido
+                </a>
+                <form action="{{ route('admin.pedidos.destroy', $pedido) }}" method="POST" 
+                      onsubmit="return confirm('¿Estás seguro de eliminar este pedido?');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-modern btn-danger w-100">
+                        <i class="fas fa-trash me-2"></i>Eliminar Pedido
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Información adicional -->
+        <div class="modern-card p-4 mt-4 animate-fade-in" style="animation-delay: 0.4s;">
+            <h5 class="mb-4 fw-bold">
+                <i class="fas fa-calendar me-2 text-primary"></i>Información
+            </h5>
+            <div class="mb-2">
+                <small class="text-muted">Fecha de creación:</small>
+                <p class="mb-0 fw-bold">{{ $pedido->created_at->format('d/m/Y H:i') }}</p>
+            </div>
+            @if($pedido->updated_at != $pedido->created_at)
+            <div class="mb-2">
+                <small class="text-muted">Última actualización:</small>
+                <p class="mb-0 fw-bold">{{ $pedido->updated_at->format('d/m/Y H:i') }}</p>
+            </div>
+            @endif
+            @if($pedido->usuario)
+            <div>
+                <small class="text-muted">Usuario:</small>
+                <p class="mb-0 fw-bold">
+                    <i class="fas fa-user me-2"></i>{{ $pedido->usuario->name }}
+                </p>
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
+
 <style>
-    .ticket-container {
-        max-width: 600px;
-        margin: auto;
-        background: #fff;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        font-size: 15px;
-    }
-
-    .ticket-header {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    .ticket-header h2 {
-        margin: 0;
-        font-size: 22px;
-    }
-
-    .ticket-section {
-        margin-bottom: 20px;
-    }
-
-    .ticket-section h4 {
-        font-size: 16px;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 6px;
-        margin-bottom: 12px;
-    }
-
-    .ticket-items table {
-        width: 100%;
-    }
-
-    .ticket-items th, .ticket-items td {
-        padding: 8px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .ticket-footer {
-        text-align: right;
-        font-size: 18px;
-        font-weight: bold;
-    }
-
-    .btn-print {
-        width: 100%;
+    @media print {
+        .admin-header,
+        .col-md-4,
+        .btn {
+            display: none !important;
+        }
+        .col-md-8 {
+            width: 100% !important;
+        }
     }
 </style>
-
-<div class="ticket-container">
-
-    <div class="ticket-header">
-        <h2>Detalle del Pedido #{{ $pedido->id }}</h2>
-        <small>{{ $pedido->created_at->format('d/m/Y H:i') }}</small>
-    </div>
-
-    <div class="ticket-section">
-        <h4>Datos del Cliente</h4>
-        <p><strong>Nombre:</strong> {{ $pedido->nombre }}</p>
-        <p><strong>Dirección:</strong> {{ $pedido->direccion }}</p>
-        <p><strong>Teléfono:</strong> {{ $pedido->telefono }}</p>
-        <p><strong>Método de pago:</strong> {{ $pedido->metodo_pago }}</p>
-    </div>
-
-    <div class="ticket-section">
-        <h4>Estado</h4>
-        <form action="{{ route('admin.pedidos.update', $pedido) }}" method="POST">
-            @csrf
-            @method('PUT')
-
-            <select name="estado" class="form-control mb-3">
-                <option value="pendiente"     {{ $pedido->estado == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                <option value="preparando"    {{ $pedido->estado == 'preparando' ? 'selected' : '' }}>En preparación</option>
-                <option value="encamino"      {{ $pedido->estado == 'encamino' ? 'selected' : '' }}>En camino</option>
-                <option value="entregado"     {{ $pedido->estado == 'entregado' ? 'selected' : '' }}>Entregado</option>
-            </select>
-
-            <button class="btn btn-primary w-100">Actualizar Estado</button>
-        </form>
-    </div>
-
-    <div class="ticket-section ticket-items">
-        <h4>Platos</h4>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Plato</th>
-                    <th>Cant.</th>
-                    <th>Precio</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @foreach($pedido->platos as $plato)
-                    <tr>
-                        <td>{{ $plato->nombre }}</td>
-                        <td>{{ $plato->pivot->cantidad }}</td>
-                        <td>S/ {{ number_format($plato->pivot->precio, 2) }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-    </div>
-
-    <div class="ticket-footer">
-        Total: S/ {{ number_format($pedido->total, 2) }}
-    </div>
-
-    <button class="btn btn-secondary mt-3 btn-print" onclick="window.print()">Imprimir recibo</button>
-
-</div>
 
 @endsection

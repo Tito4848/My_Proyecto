@@ -8,6 +8,20 @@
 
     <h2 class="mb-4">Crear Pedido</h2>
 
+    @if(session('success'))
+        <x-alert type="success">{{ session('success') }}</x-alert>
+    @endif
+
+    @if ($errors->any())
+        <x-alert type="error">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </x-alert>
+    @endif
+
     <form action="{{ route('admin.pedidos.store') }}" method="POST">
         @csrf
 
@@ -17,40 +31,55 @@
             <div class="row mt-3">
                 <div class="col-md-4">
                     <label>Nombre</label>
-                    <input type="text" name="nombre" class="form-control" required>
+                    <input type="text" name="nombre" class="form-control @error('nombre') is-invalid @enderror" value="{{ old('nombre') }}" required>
+                    @error('nombre')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-md-4">
                     <label>Dirección</label>
-                    <input type="text" name="direccion" class="form-control" required>
+                    <input type="text" name="direccion" class="form-control @error('direccion') is-invalid @enderror" value="{{ old('direccion') }}" required>
+                    @error('direccion')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-md-4">
                     <label>Teléfono</label>
-                    <input type="text" name="telefono" class="form-control" required>
+                    <input type="text" name="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono') }}" required>
+                    @error('telefono')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
 
             <div class="row mt-3">
                 <div class="col-md-4">
                     <label>Método de Pago</label>
-                    <select name="metodo_pago" class="form-control" required>
+                    <select name="metodo_pago" class="form-control @error('metodo_pago') is-invalid @enderror" required>
                         <option value="">Seleccionar</option>
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Tarjeta">Tarjeta</option>
-                        <option value="Yape">Yape</option>
-                        <option value="Plin">Plin</option>
+                        <option value="Efectivo" {{ old('metodo_pago') == 'Efectivo' ? 'selected' : '' }}>Efectivo</option>
+                        <option value="Tarjeta" {{ old('metodo_pago') == 'Tarjeta' ? 'selected' : '' }}>Tarjeta</option>
+                        <option value="Yape" {{ old('metodo_pago') == 'Yape' ? 'selected' : '' }}>Yape</option>
+                        <option value="Plin" {{ old('metodo_pago') == 'Plin' ? 'selected' : '' }}>Plin</option>
                     </select>
+                    @error('metodo_pago')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 <div class="col-md-4">
                     <label>Estado</label>
-                    <select name="estado" class="form-control" required>
-                        <option value="pendiente">Pendiente</option>
-                        <option value="preparando">En preparación</option>
-                        <option value="encamino">En camino</option>
-                        <option value="entregado">Entregado</option>
+                    <select name="estado" class="form-control @error('estado') is-invalid @enderror" required>
+                        <option value="pendiente" {{ old('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                        <option value="preparando" {{ old('estado') == 'preparando' ? 'selected' : '' }}>En preparación</option>
+                        <option value="encamino" {{ old('estado') == 'encamino' ? 'selected' : '' }}>En camino</option>
+                        <option value="entregado" {{ old('estado') == 'entregado' ? 'selected' : '' }}>Entregado</option>
                     </select>
+                    @error('estado')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
         </div>

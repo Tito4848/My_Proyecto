@@ -3,31 +3,64 @@
 @section('title', 'Menú | Sal & Sabor')
  
 @section('content')
-<h1 class="text-center mb-4">Nuestro Menú</h1>
+<div class="container py-5">
+    <h1 class="text-center mb-5 text-gradient fw-bold" style="font-size: 3rem; letter-spacing: 2px;">
+        <i class="fas fa-utensils me-3"></i>Nuestro Menú
+    </h1>
  
 @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
+        <x-alert type="success">{{ session('success') }}</x-alert>
+    @endif
+
+    @if(session('error'))
+        <x-alert type="error">{{ session('error') }}</x-alert>
 @endif
  
-<div class="text-center mb-4">
-    <button class="btn btn-primary filter-btn" data-categoria="todos">Todos</button>
-    <button class="btn btn-secondary filter-btn" data-categoria="Entradas">Entradas</button>
-    <button class="btn btn-secondary filter-btn" data-categoria="Platos principales">Platos Principales</button>
-    <button class="btn btn-secondary filter-btn" data-categoria="Postres">Postres</button>
-    <button class="btn btn-secondary filter-btn" data-categoria="Bebidas">Bebidas</button>
+    <div class="text-center mb-5 animate-fade-in">
+        <button class="btn btn-modern btn-primary filter-btn me-2 mb-2" data-categoria="todos">
+            <i class="fas fa-th me-2"></i>Todos
+        </button>
+        <button class="btn btn-modern btn-secondary filter-btn me-2 mb-2" data-categoria="Entradas">
+            <i class="fas fa-appetizer me-2"></i>Entradas
+        </button>
+        <button class="btn btn-modern btn-secondary filter-btn me-2 mb-2" data-categoria="Platos principales">
+            <i class="fas fa-drumstick-bite me-2"></i>Platos Principales
+        </button>
+        <button class="btn btn-modern btn-secondary filter-btn me-2 mb-2" data-categoria="Postres">
+            <i class="fas fa-birthday-cake me-2"></i>Postres
+        </button>
+        <button class="btn btn-modern btn-secondary filter-btn mb-2" data-categoria="Bebidas">
+            <i class="fas fa-glass-water me-2"></i>Bebidas
+        </button>
 </div>
  
 <div class="row g-4">
-    @foreach($platos as $plato)
-        <div class="col-md-4 plato" data-categoria="{{ $plato->categoria ?? 'Plato Principal' }}">
-            <div class="card h-100 shadow-sm">
+        @foreach($platos as $index => $plato)
+            <div class="col-md-4 plato animate-scale-in" data-categoria="{{ $plato->categoria ?? 'Plato Principal' }}" style="animation-delay: {{ $index * 0.1 }}s;">
+                <div class="menu-item modern-card h-100">
                 <!-- Enlace que rodea la imagen y abre el modal -->
-                <a href="#" data-bs-toggle="modal" data-bs-target="#modalPlato{{ $plato->id }}">
-                    <img src="{{ asset('images/' . $plato->imagen) }}" class="card-img-top" alt="{{ $plato->nombre }}" style="height:200px; object-fit:cover;">
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#modalPlato{{ $plato->id }}" class="image-zoom d-block">
+                        <img src="{{ asset('images/' . $plato->imagen) }}" class="card-img-top w-100" alt="{{ $plato->nombre }}" style="height:250px; object-fit:cover;">
                 </a>
-                <div class="card-body text-center">
-                    <h5 class="card-title">{{ $plato->nombre }}</h5>
-                    <p class="fw-bold text-danger">S/ {{ number_format($plato->precio, 2) }}</p>
+                    <div class="card-body text-center p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title fw-bold mb-0 flex-grow-1" style="color: #333;">{{ $plato->nombre }}</h5>
+                            @auth
+                            <button class="btn btn-sm btn-link text-danger p-0 ms-2" 
+                                    onclick="toggleFavorito({{ $plato->id }})"
+                                    title="Agregar a favoritos">
+                                <i class="far fa-heart" id="fav-icon-{{ $plato->id }}"></i>
+                            </button>
+                            @endauth
+                        </div>
+                        @if($plato->descripcion)
+                            <p class="text-muted small mb-3" style="font-size: 0.85rem;">
+                                {{ Str::limit($plato->descripcion, 60) }}
+                            </p>
+                        @endif
+                        <p class="fw-bold text-danger fs-4 mb-4">
+                            <i class="fas fa-tag me-1"></i>S/ {{ number_format($plato->precio, 2) }}
+                        </p>
  
                     <!-- Formulario para agregar al carrito -->
                     <form action="{{ route('carrito.agregar') }}" method="POST">
@@ -36,34 +69,47 @@
                         <input type="hidden" name="nombre" value="{{ $plato->nombre }}">
                         <input type="hidden" name="precio" value="{{ $plato->precio }}">
                         <input type="hidden" name="cantidad" value="1">
-                        <button type="submit" class="btn btn-danger w-100">Agregar al carrito</button>
+                            <button type="submit" class="btn btn-modern btn-danger w-100 hover-glow">
+                                <i class="fas fa-shopping-cart me-2"></i>Agregar al carrito
+                            </button>
                     </form>
                 </div>
             </div>
  
             <!-- Modal para mostrar detalles del plato -->
             <div class="modal fade" id="modalPlato{{ $plato->id }}" tabindex="-1" aria-labelledby="modalLabel{{ $plato->id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalLabel{{ $plato->id }}">{{ $plato->nombre }}</h5>
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content modern-card border-0">
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title fw-bold text-gradient" id="modalLabel{{ $plato->id }}" style="font-size: 1.5rem;">
+                                <i class="fas fa-utensils me-2"></i>{{ $plato->nombre }}
+                            </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <img src="{{ asset('images/' . $plato->imagen) }}" alt="{{ $plato->nombre }}" class="img-fluid mb-3">
-                            <h5>Descripción:</h5>
-                            <p>{{ $plato->descripcion }}</p>
-                            <h5>Precio: S/ {{ number_format($plato->precio, 2) }}</h5>
+                            <div class="image-zoom mb-4">
+                                <img src="{{ asset('images/' . $plato->imagen) }}" alt="{{ $plato->nombre }}" class="img-fluid rounded shadow-soft">
+                            </div>
+                            <h5 class="fw-bold mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Descripción:</h5>
+                            <p class="text-muted mb-4">{{ $plato->descripcion }}</p>
+                            <div class="d-flex align-items-center justify-content-between p-3 bg-light rounded">
+                                <h5 class="mb-0 fw-bold">Precio:</h5>
+                                <span class="text-danger fw-bold fs-4">S/ {{ number_format($plato->precio, 2) }}</span>
+                            </div>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            <form action="{{ route('carrito.agregar') }}" method="POST">
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-modern btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Cerrar
+                            </button>
+                            <form action="{{ route('carrito.agregar') }}" method="POST" class="d-inline">
                                 @csrf
                                 <input type="hidden" name="id" value="{{ $plato->id }}">
                                 <input type="hidden" name="nombre" value="{{ $plato->nombre }}">
                                 <input type="hidden" name="precio" value="{{ $plato->precio }}">
                                 <input type="hidden" name="cantidad" value="1">
-                                <button type="submit" class="btn btn-primary">Agregar al carrito</button>
+                                <button type="submit" class="btn btn-modern btn-danger hover-glow">
+                                    <i class="fas fa-shopping-cart me-2"></i>Agregar al carrito
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -74,9 +120,13 @@
 </div>
  
  
-<div class="text-center mt-5">
-    <a href="{{ route('carrito') }}" class="btn btn-success btn-lg">Ver carrito</a>
+<div class="text-center mt-5 animate-fade-in">
+    <a href="{{ route('carrito') }}" class="btn btn-modern btn-success btn-lg hover-glow">
+        <i class="fas fa-shopping-bag me-2"></i>Ver carrito
+    </a>
 </div>
+</div>
+
 <script>
     const botones = document.querySelectorAll('.filter-btn');
     const platos = document.querySelectorAll('.plato');
@@ -85,18 +135,36 @@
         btn.addEventListener('click', () => {
             const categoria = btn.getAttribute('data-categoria');
  
-            platos.forEach(plato => {
+            platos.forEach((plato, index) => {
                 if(categoria.toLowerCase() === 'todos' || plato.dataset.categoria.toLowerCase() === categoria.toLowerCase()) {
                     plato.style.display = 'block';
+                    plato.style.animation = `scaleIn 0.5s ease-out ${index * 0.1}s both`;
                 } else {
                     plato.style.display = 'none';
                 }
             });
  
-            botones.forEach(b => b.classList.remove('btn-primary'));
-            botones.forEach(b => b.classList.add('btn-secondary'));
+            botones.forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-secondary');
+            });
+            btn.classList.remove('btn-secondary');
             btn.classList.add('btn-primary');
         });
     });
+
+    function toggleFavorito(platoId) {
+        const icon = document.getElementById('fav-icon-' + platoId);
+        if (icon.classList.contains('far')) {
+            icon.classList.remove('far');
+            icon.classList.add('fas');
+            icon.style.color = '#d62828';
+            // Aquí podrías agregar lógica para guardar en favoritos
+        } else {
+            icon.classList.remove('fas');
+            icon.classList.add('far');
+            icon.style.color = '';
+        }
+    }
 </script>
 @endsection
