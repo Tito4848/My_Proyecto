@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container py-5">
-<div class="row justify-content-center">
+    <div class="row justify-content-center">
         <div class="col-lg-8">
             <h1 class="text-center mb-5 text-gradient fw-bold animate-fade-in" style="font-size: 2.5rem;">
                 <i class="fas fa-credit-card me-2"></i>Pago con Tarjeta
@@ -32,16 +32,15 @@
                             </x-alert>
                         @endif
 
-                <form action="{{ route('pago.procesar') }}" method="POST">
-                    @csrf
-
+                        <form action="{{ route('pago.procesar') }}" method="POST">
+                            @csrf
                             <div class="mb-4">
                                 <label for="nombre" class="form-label fw-bold">
                                     <i class="fas fa-user me-2 text-primary"></i>Nombre en la Tarjeta
                                 </label>
                                 <input type="text" id="nombre" name="nombre" 
                                        class="modern-input form-control @error('nombre') is-invalid @enderror" 
-                                       placeholder="JUAN PEREZ" 
+                                       placeholder="Ingresa Nombre" 
                                        value="{{ old('nombre') }}" 
                                        required>
                                 @error('nombre')
@@ -96,7 +95,7 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-                    </div>
+                            </div>
 
                             <button type="submit" class="btn btn-modern btn-success w-100 hover-glow">
                                 <i class="fas fa-check-circle me-2"></i>Confirmar Pago
@@ -140,8 +139,16 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0 fw-bold">Total:</h5>
                                 <h4 class="mb-0 fw-bold text-danger">S/ {{ number_format($total, 2) }}</h4>
+                            </div>
                         </div>
-                    </div>
+
+                      <!-- QR de Yape -->
+<div class="mt-4 text-center">
+    <h6 class="fw-semibold mb-2">Paga con Yape</h6>
+    <img src="{{ asset('images/QR-MAYCOL.jpg') }}" alt="QR de Yape" class="mx-auto w-40 h-40 rounded-lg shadow-md">
+    <p class="text-muted mt-2">Escanea este código con Yape para completar tu pago.</p>
+</div>
+
 
                         <div class="mt-4 p-3 bg-light rounded">
                             <small class="text-muted">
@@ -155,4 +162,5 @@
         </div>
     </div>
 </div>
+
 @endsection
