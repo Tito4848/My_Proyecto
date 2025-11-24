@@ -18,9 +18,9 @@
 
 
                 <!-- Navigation Links (Left side) -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('inicio')" :active="request()->routeIs('inicio')">
-                        {{ __('Inicio') }}
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex align-items-center">
+                    <x-nav-link :href="route('inicio')" :active="request()->routeIs('inicio')" class="d-flex align-items-center">
+                        <i class="fas fa-home me-1"></i>{{ __('Inicio') }}
                     </x-nav-link>
 
                     <!-- Menú con Dropdown -->
@@ -28,7 +28,7 @@
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-50 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('menu') || request()->routeIs('delivery') || request()->routeIs('carrito') ? 'text-gray-900 bg-gray-50' : '' }}">
                                 <i class="fas fa-utensils me-2"></i>
-                        {{ __('Menú') }}
+                                {{ __('Menú') }}
                                 <svg class="ms-2 -me-0.5 h-4 w-4 transition-transform duration-200" 
                                      :class="{'rotate-180': open}" 
                                      xmlns="http://www.w3.org/2000/svg" 
@@ -73,12 +73,16 @@
                         </x-slot>
                     </x-dropdown>
 
-                    <x-nav-link :href="route('contacto')" :active="request()->routeIs('contacto')">
-                        {{ __('Contacto') }}
+                    <x-nav-link :href="route('sobre-nosotros')" :active="request()->routeIs('sobre-nosotros')" class="d-flex align-items-center">
+                        <i class="fas fa-info-circle me-1"></i>{{ __('Sobre Nosotros') }}
                     </x-nav-link>
 
-                    <x-nav-link :href="route('reserva')" :active="request()->routeIs('reserva')">
-                        {{ __('Reservas') }}
+                    <x-nav-link :href="route('contacto')" :active="request()->routeIs('contacto')" class="d-flex align-items-center">
+                        <i class="fas fa-envelope me-1"></i>{{ __('Contacto') }}
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('reserva')" :active="request()->routeIs('reserva')" class="d-flex align-items-center">
+                        <i class="fas fa-calendar-check me-1"></i>{{ __('Reservas') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -214,6 +218,10 @@
                 @if($carritoCount > 0)
                     <span class="badge bg-danger rounded-pill ms-2">{{ $carritoCount }}</span>
                 @endif
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('sobre-nosotros')" :active="request()->routeIs('sobre-nosotros')">
+                <i class="fas fa-info-circle me-2"></i>{{ __('Sobre Nosotros') }}
             </x-responsive-nav-link>
 
             <x-responsive-nav-link :href="route('contacto')" :active="request()->routeIs('contacto')">

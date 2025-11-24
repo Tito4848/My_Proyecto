@@ -16,5 +16,8 @@ class DatabaseSeeder extends Seeder
 
         // Crear platos
         $this->call(PlatoSeeder::class);
+        
+        // Crear mesas
+        $this->call(MesaSeeder::class);
     }
 }

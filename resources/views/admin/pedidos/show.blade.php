@@ -177,8 +177,48 @@
             </form>
         </div>
 
-        <!-- Acciones -->
+        <!-- Rastreo en Tiempo Real -->
+        @if($pedido->codigo_seguimiento)
         <div class="modern-card p-4 mt-4 animate-fade-in" style="animation-delay: 0.3s;">
+            <h5 class="mb-4 fw-bold">
+                <i class="fas fa-map-marked-alt me-2 text-primary"></i>Rastreo del Pedido
+            </h5>
+            
+            @if($pedido->latitud && $pedido->longitud)
+            <div class="mb-3">
+                <small class="text-muted d-block mb-1">Ubicación Actual:</small>
+                <p class="mb-0 fw-bold">
+                    <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                    Lat: {{ number_format($pedido->latitud, 6) }}, Lng: {{ number_format($pedido->longitud, 6) }}
+                </p>
+            </div>
+            @endif
+            
+            <div class="d-grid gap-2">
+                <a href="{{ route('seguimiento', $pedido->codigo_seguimiento) }}" 
+                   target="_blank"
+                   class="btn btn-modern btn-info">
+                    <i class="fas fa-eye me-2"></i>Ver Rastreo en Tiempo Real
+                </a>
+                <button onclick="simularMovimiento({{ $pedido->id }})" 
+                        class="btn btn-modern btn-warning">
+                    <i class="fas fa-sync me-2"></i>Simular Movimiento
+                </button>
+            </div>
+            
+            @if($pedido->ultima_actualizacion_ubicacion)
+            <div class="mt-3 pt-3 border-top">
+                <small class="text-muted">
+                    <i class="fas fa-clock me-1"></i>
+                    Última actualización: {{ $pedido->ultima_actualizacion_ubicacion->diffForHumans() }}
+                </small>
+            </div>
+            @endif
+        </div>
+        @endif
+
+        <!-- Acciones -->
+        <div class="modern-card p-4 mt-4 animate-fade-in" style="animation-delay: 0.4s;">
             <h5 class="mb-4 fw-bold">
                 <i class="fas fa-cog me-2 text-primary"></i>Acciones
             </h5>
@@ -226,6 +266,35 @@
         </div>
     </div>
 </div>
+
+<script>
+function simularMovimiento(pedidoId) {
+    if (!confirm('¿Deseas simular el movimiento del pedido? Esto actualizará su ubicación.')) {
+        return;
+    }
+    
+    fetch(`/admin/pedidos/${pedidoId}/simular-movimiento`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Ubicación actualizada correctamente. El cliente verá el cambio en tiempo real.');
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'No se pudo actualizar la ubicación'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al simular el movimiento');
+    });
+}
+</script>
 
 <style>
     @media print {

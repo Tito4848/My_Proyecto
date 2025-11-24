@@ -34,6 +34,10 @@ Route::prefix('admin')
     Route::resource('platos', PlatoAdminController::class);
     Route::resource('pedidos', AdminPedidoController::class);
     Route::resource('usuarios', UserController::class);
+    
+    // Tracking
+    Route::post('/pedidos/{id}/actualizar-ubicacion', [\App\Http\Controllers\Admin\TrackingController::class, 'actualizarUbicacion'])->name('pedidos.actualizar-ubicacion');
+    Route::post('/pedidos/{id}/simular-movimiento', [\App\Http\Controllers\Admin\TrackingController::class, 'simularMovimiento'])->name('pedidos.simular-movimiento');
 });
 
 /*
@@ -47,6 +51,9 @@ Route::get('/', function () {
 })->name('inicio');
 
 Route::get('/menu', [PlatoController::class, 'index'])->name('menu');
+Route::get('/sobre-nosotros', function () {
+    return view('sobre-nosotros');
+})->name('sobre-nosotros');
 
 // Carrito
 Route::get('/carrito', [CarritoController::class, 'mostrar'])->name('carrito');
@@ -59,6 +66,7 @@ Route::delete('/carrito', [CarritoController::class, 'vaciar'])->name('vaciar');
 Route::get('/contacto', [ContactoController::class, 'index'])->name('contacto');
 Route::post('/contacto/enviar', [ContactoController::class, 'enviar'])->name('contacto.enviar');
 Route::get('/reserva', [ReservaController::class, 'index'])->name('reserva');
+Route::get('/reserva/mesas-disponibles', [ReservaController::class, 'obtenerMesasDisponibles'])->name('reserva.obtener-mesas');
 Route::post('/reserva', [ReservaController::class, 'store'])->name('reserva.store');
 
 // Delivery
@@ -81,7 +89,10 @@ Route::middleware(['auth'])->group(function () {
 
 
 Route::get('/mis-compras', function () {
-    $pedidos = \App\Models\Pedido::where('user_id', auth()->id())->get();
+    $pedidos = \App\Models\Pedido::where('user_id', auth()->id())
+        ->with('platos')
+        ->orderBy('created_at', 'desc')
+        ->get();
     return view('mis-compras', compact('pedidos'));
 })->middleware('auth')->name('mis-compras');
 
@@ -97,5 +108,11 @@ Route::post('/pago/procesar', [PedidoController::class, 'procesarPago'])
     ->name('pago.procesar');
 
 Route::get('/menu/{plato}', [PlatoController::class, 'show'])->name('menu.show');
+
+Route::get('/pedidos/{id}', [PedidoController::class, 'show'])->name('pedidos.show');
+Route::get('/seguimiento/{codigo}', [PedidoController::class, 'seguimiento'])->name('seguimiento');
+Route::get('/pedidos/{id}/estado', [PedidoController::class, 'obtenerEstado'])->name('pedidos.estado');
+Route::post('/pedidos/{id}/actualizar-estado', [PedidoController::class, 'actualizarEstado'])->name('pedidos.actualizar-estado')->middleware('auth');
+Route::post('/pedidos/{id}/actualizar-ubicacion', [PedidoController::class, 'actualizarUbicacion'])->name('pedidos.actualizar-ubicacion')->middleware('auth');
 
 require __DIR__ . '/auth.php';

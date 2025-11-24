@@ -36,7 +36,7 @@
  
 <div class="row g-4">
         @foreach($platos as $index => $plato)
-            <div class="col-md-4 plato animate-scale-in" data-categoria="{{ $plato->categoria ?? 'Plato Principal' }}" style="animation-delay: {{ $index * 0.1 }}s;">
+            <div class="col-md-4 plato scroll-reveal" data-categoria="{{ $plato->categoria ?? 'Plato Principal' }}">
                 <div class="menu-item modern-card h-100">
                 <!-- Enlace que rodea la imagen y abre el modal -->
                     <a href="#" data-bs-toggle="modal" data-bs-target="#modalPlato{{ $plato->id }}" class="image-zoom d-block">
@@ -127,18 +127,69 @@
 </div>
 </div>
 
+<style>
+    .filter-btn {
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .filter-btn:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 25px rgba(214, 40, 40, 0.3);
+    }
+    
+    .menu-item {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .menu-item:hover {
+        transform: translateY(-10px) scale(1.02);
+    }
+    
+    .menu-item img {
+        transition: transform 0.5s ease;
+    }
+    
+    .menu-item:hover img {
+        transform: scale(1.1);
+    }
+</style>
+
 <script>
+    // Scroll reveal para platos
+    document.addEventListener('DOMContentLoaded', function() {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('revealed');
+                    }, index * 50);
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.plato').forEach(el => {
+            observer.observe(el);
+        });
+    });
+    
     const botones = document.querySelectorAll('.filter-btn');
     const platos = document.querySelectorAll('.plato');
  
     botones.forEach(btn => {
         btn.addEventListener('click', () => {
             const categoria = btn.getAttribute('data-categoria');
+            let visibleCount = 0;
  
-            platos.forEach((plato, index) => {
+            platos.forEach((plato) => {
                 if(categoria.toLowerCase() === 'todos' || plato.dataset.categoria.toLowerCase() === categoria.toLowerCase()) {
                     plato.style.display = 'block';
-                    plato.style.animation = `scaleIn 0.5s ease-out ${index * 0.1}s both`;
+                    plato.style.animation = `fadeInUp 0.5s ease-out ${visibleCount * 0.05}s both`;
+                    visibleCount++;
                 } else {
                     plato.style.display = 'none';
                 }
@@ -150,15 +201,22 @@
             });
             btn.classList.remove('btn-secondary');
             btn.classList.add('btn-primary');
+            
+            // Animación del botón
+            btn.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                btn.style.transform = 'scale(1)';
+            }, 150);
         });
     });
-
+ 
     function toggleFavorito(platoId) {
         const icon = document.getElementById('fav-icon-' + platoId);
         if (icon.classList.contains('far')) {
             icon.classList.remove('far');
             icon.classList.add('fas');
             icon.style.color = '#d62828';
+            icon.style.animation = 'bounceIn 0.5s ease-out';
             // Aquí podrías agregar lógica para guardar en favoritos
         } else {
             icon.classList.remove('fas');

@@ -1,45 +1,95 @@
 @extends('layouts.app')
 
+@section('title', 'Mis Compras | Sal & Sabor')
+
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <h1 class="text-4xl font-extrabold mb-8 text-gray-900">Mis Compras</h1>
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-gradient fw-bold mb-2" style="font-size: 2.5rem;">
+                <i class="fas fa-shopping-bag me-2"></i>Mis Compras
+            </h1>
+            <p class="text-muted">Historial completo de todos tus pedidos</p>
+        </div>
+    </div>
 
     @if($pedidos->isEmpty())
-        <p class="text-center text-gray-500 text-lg">No tienes compras registradas aún.</p>
+        <div class="row">
+            <div class="col-12">
+                <div class="modern-card p-5 text-center animate-fade-in">
+                    <div class="mb-4">
+                        <i class="fas fa-shopping-bag fa-5x text-muted mb-3" style="opacity: 0.3;"></i>
+                    </div>
+                    <h4 class="fw-bold mb-2">No tienes compras registradas</h4>
+                    <p class="text-muted mb-4">Comienza a explorar nuestro delicioso menú y realiza tu primer pedido</p>
+                    <a href="{{ route('menu') }}" class="btn btn-modern btn-primary hover-lift">
+                        <i class="fas fa-utensils me-2"></i>Ver Menú
+                    </a>
+                </div>
+            </div>
+        </div>
     @else
-        <div class="overflow-x-auto rounded-lg shadow-lg border border-gray-200">
-            <table class="min-w-full bg-white divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 uppercase tracking-wider">Pedido</th>
-                        <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 uppercase tracking-wider">Fecha</th>
-                        <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 uppercase tracking-wider">Total</th>
-                        <th class="text-left py-4 px-6 text-sm font-semibold text-gray-700 uppercase tracking-wider">Estado</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @foreach ($pedidos as $pedido)
-                    <tr class="hover:bg-gray-50 transition-colors duration-200 cursor-pointer">
-                        <td class="py-4 px-6 whitespace-nowrap font-medium text-gray-900">#{{ $pedido->id }}</td>
-                        <td class="py-4 px-6 whitespace-nowrap text-gray-600">{{ $pedido->created_at->format('d/m/Y H:i') }}</td>
-                        <td class="py-4 px-6 whitespace-nowrap font-semibold text-green-600">${{ number_format($pedido->total ?? 0, 2) }}</td>
-                        <td class="py-4 px-6 whitespace-nowrap">
-                            @php
-                                $estado = $pedido->estado ?? 'Pendiente';
-                                $color = match($estado) {
-                                    'Completado' => 'bg-green-100 text-green-800',
-                                    'Cancelado' => 'bg-red-100 text-red-800',
-                                    default => 'bg-yellow-100 text-yellow-800',
-                                };
-                            @endphp
-                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold {{ $color }}">
-                                {{ $estado }}
-                            </span>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <div class="row">
+            <div class="col-12">
+                <div class="modern-card p-4 animate-fade-in">
+                    <div class="table-responsive">
+                        <table class="table-modern table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th><i class="fas fa-hashtag me-2"></i>ID</th>
+                                    <th><i class="fas fa-calendar me-2"></i>Fecha</th>
+                                    <th><i class="fas fa-money-bill-wave me-2"></i>Total</th>
+                                    <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                                    <th><i class="fas fa-map-marker-alt me-2"></i>Dirección</th>
+                                    <th class="text-center"><i class="fas fa-cog me-2"></i>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($pedidos as $pedido)
+                                <tr>
+                                    <td class="fw-bold">#{{ $pedido->id }}</td>
+                                    <td>
+                                        <div>{{ $pedido->created_at->format('d/m/Y') }}</div>
+                                        <small class="text-muted">{{ $pedido->created_at->format('H:i') }}</small>
+                                    </td>
+                                    <td class="fw-bold text-success">S/ {{ number_format($pedido->total ?? 0, 2) }}</td>
+                                    <td>
+                                        @php
+                                            $colors = [
+                                                'pendiente' => 'warning',
+                                                'preparando' => 'info',
+                                                'encamino' => 'primary',
+                                                'entregado' => 'success',
+                                            ];
+                                            $icons = [
+                                                'pendiente' => 'clock',
+                                                'preparando' => 'utensils',
+                                                'encamino' => 'truck',
+                                                'entregado' => 'check-circle',
+                                            ];
+                                        @endphp
+                                        <span class="badge bg-{{ $colors[$pedido->estado] ?? 'secondary' }} px-3 py-2">
+                                            <i class="fas fa-{{ $icons[$pedido->estado] ?? 'info' }} me-1"></i>
+                                            {{ ucfirst($pedido->estado) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ Str::limit($pedido->direccion ?? 'N/A', 30) }}
+                                        </small>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{{ route('profile.edit') }}" class="btn btn-sm btn-modern btn-primary hover-scale">
+                                            <i class="fas fa-eye me-1"></i> Ver Detalles
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     @endif
 </div>

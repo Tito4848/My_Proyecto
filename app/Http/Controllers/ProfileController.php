@@ -17,7 +17,11 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
-        $pedidos = Pedido::where('user_id', $request->user()->id)->get();
+        $pedidos = Pedido::where('user_id', $request->user()->id)
+            ->with('platos')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
         return view('profile.edit', [
             'user' => $request->user(),
             'pedidos' => $pedidos,

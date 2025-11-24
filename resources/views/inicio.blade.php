@@ -99,6 +99,78 @@
         object-fit: cover;
         border: 3px solid #d62828;
     }
+    
+    /* Animaciones modernas */
+    .scroll-reveal {
+        opacity: 0;
+        transform: translateY(50px);
+        transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    .scroll-reveal.revealed {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .feature-card {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-15px) scale(1.02);
+    }
+    
+    .testimonial-card {
+        transition: all 0.3s ease;
+    }
+    
+    .testimonial-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+    
+    .pulse-icon {
+        animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+    }
+    
+    .float-animation {
+        animation: floatUpDown 3s ease-in-out infinite;
+    }
+    
+    @keyframes floatUpDown {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+    
+    .gradient-text {
+        background: linear-gradient(135deg, #d62828 0%, #b71f1f 50%, #d62828 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 3s linear infinite;
+    }
+    
+    @keyframes gradientShift {
+        to {
+            background-position: 200% center;
+        }
+    }
 </style>
 
 <!-- =========================
@@ -171,40 +243,40 @@
 ========================= -->
 <section class="py-5" style="background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);">
     <div class="container">
-        <h2 class="text-center mb-5 text-gradient fw-bold" style="font-size: 2.5rem;">
-            <i class="fas fa-star me-2"></i>¿Por qué elegirnos?
+        <h2 class="text-center mb-5 gradient-text fw-bold scroll-reveal" style="font-size: 2.5rem;">
+            <i class="fas fa-star me-2 float-animation"></i>¿Por qué elegirnos?
         </h2>
         <div class="row g-4">
-            <div class="col-md-3 col-sm-6 animate-fade-in">
+            <div class="col-md-3 col-sm-6 scroll-reveal">
                 <div class="feature-card">
-                    <div class="feature-icon bg-danger text-white">
+                    <div class="feature-icon bg-danger text-white pulse-icon">
                         <i class="fas fa-utensils"></i>
                     </div>
                     <h4 class="fw-bold mb-3">Cocina Auténtica</h4>
                     <p class="text-muted">Recetas tradicionales peruanas preparadas con ingredientes frescos y de calidad.</p>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="col-md-3 col-sm-6 scroll-reveal">
                 <div class="feature-card">
-                    <div class="feature-icon bg-success text-white">
+                    <div class="feature-icon bg-success text-white pulse-icon" style="animation-delay: 0.2s;">
                         <i class="fas fa-truck"></i>
                     </div>
                     <h4 class="fw-bold mb-3">Delivery Rápido</h4>
                     <p class="text-muted">Llevamos el sabor a tu casa con nuestro servicio de delivery rápido y eficiente.</p>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="col-md-3 col-sm-6 scroll-reveal">
                 <div class="feature-card">
-                    <div class="feature-icon bg-warning text-white">
+                    <div class="feature-icon bg-warning text-white pulse-icon" style="animation-delay: 0.4s;">
                         <i class="fas fa-clock"></i>
                     </div>
                     <h4 class="fw-bold mb-3">Atención 24/7</h4>
                     <p class="text-muted">Estamos disponibles todos los días para servirte con la mejor atención.</p>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 animate-fade-in" style="animation-delay: 0.3s;">
+            <div class="col-md-3 col-sm-6 scroll-reveal">
                 <div class="feature-card">
-                    <div class="feature-icon bg-info text-white">
+                    <div class="feature-icon bg-info text-white pulse-icon" style="animation-delay: 0.6s;">
                         <i class="fas fa-heart"></i>
                     </div>
                     <h4 class="fw-bold mb-3">Hecho con Amor</h4>
@@ -257,11 +329,11 @@
 ========================= -->
 <section class="py-5 bg-white">
     <div class="container">
-        <h2 class="text-center mb-5 text-gradient fw-bold" style="font-size: 2.5rem;">
-            <i class="fas fa-comments me-2"></i>Lo que dicen nuestros clientes
+        <h2 class="text-center mb-5 gradient-text fw-bold scroll-reveal" style="font-size: 2.5rem;">
+            <i class="fas fa-comments me-2 float-animation"></i>Lo que dicen nuestros clientes
         </h2>
         <div class="row g-4">
-            <div class="col-md-4 animate-fade-in">
+            <div class="col-md-4 scroll-reveal">
                 <div class="testimonial-card">
                     <div class="d-flex align-items-center mb-3">
                         <img src="https://ui-avatars.com/api/?name=Maria+Gonzalez&background=d62828&color=fff&size=128" 
@@ -284,7 +356,7 @@
                     </p>
                 </div>
             </div>
-            <div class="col-md-4 animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="col-md-4 scroll-reveal">
                 <div class="testimonial-card">
                     <div class="d-flex align-items-center mb-3">
                         <img src="https://ui-avatars.com/api/?name=Carlos+Rodriguez&background=d62828&color=fff&size=128" 
@@ -307,7 +379,7 @@
                     </p>
                 </div>
             </div>
-            <div class="col-md-4 animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="col-md-4 scroll-reveal">
                 <div class="testimonial-card">
                     <div class="d-flex align-items-center mb-3">
                         <img src="https://ui-avatars.com/api/?name=Ana+Martinez&background=d62828&color=fff&size=128" 
@@ -373,12 +445,12 @@
 ========================= -->
 <section class="gradient-soft py-5">
     <div class="container">
-        <h2 class="text-center mb-5 text-gradient fw-bold" style="font-size: 2.5rem;">
-            <i class="fas fa-calendar-check me-2"></i>Reserva tu Mesa
+        <h2 class="text-center mb-5 gradient-text fw-bold scroll-reveal" style="font-size: 2.5rem;">
+            <i class="fas fa-calendar-check me-2 float-animation"></i>Reserva tu Mesa
         </h2>
         <div class="row justify-content-center align-items-center">
             <!-- Formulario -->
-            <div class="col-md-5 animate-slide-in-left">
+            <div class="col-md-5 scroll-reveal">
                 <div class="form-modern p-4">
                     <h4 class="section-title mb-4">
                         <i class="fas fa-utensils me-2"></i>Reserva ahora
@@ -427,7 +499,7 @@
             </div>
 
             <!-- Imagen -->
-            <div class="col-md-5 animate-slide-in-right">
+            <div class="col-md-5 scroll-reveal">
                 <div class="image-zoom">
                 <img src="https://imgs.search.brave.com/itHaBVCKJddopkW5LqYWQEWSwD2sTrpp67vutqYf0AQ/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzE0LzU1LzQ1LzM3/LzM2MF9GXzE0NTU0/NTM3NTlfbnBCdnpx/MllWTm5ncENJNXRl/STVUV0FuWGp3azNw/WjIuanBn"
                          class="img-fluid rounded-4 shadow-soft-lg">
@@ -436,5 +508,39 @@
         </div>
     </div>
 </section>
+
+<script>
+// Scroll reveal animation
+document.addEventListener('DOMContentLoaded', function() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+    };
+    
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.classList.add('revealed');
+                }, index * 100);
+            }
+        });
+    }, observerOptions);
+    
+    document.querySelectorAll('.scroll-reveal').forEach(el => {
+        observer.observe(el);
+    });
+    
+    // Parallax effect for hero
+    const hero = document.querySelector('.carousel');
+    if (hero) {
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const rate = scrolled * 0.5;
+            hero.style.transform = `translateY(${rate}px)`;
+        });
+    }
+});
+</script>
 
 @endsection
