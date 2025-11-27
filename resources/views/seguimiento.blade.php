@@ -300,7 +300,10 @@
 </div>
 
 <!-- Google Maps API -->
-@if(($pedido->estado_seguimiento ?? '') == 'en_camino' || ($pedido->estado_seguimiento ?? '') == 'listo' || ($pedido->latitud && $pedido->longitud))
+@if(!empty($pedido) && (
+    ($pedido->estado_seguimiento == 'en_camino' || $pedido->estado_seguimiento == 'listo') ||
+    ($pedido->latitud && $pedido->longitud)
+))
 <script>
 // Variables globales para el mapa
 let coordenadasRestaurante = { lat: -16.4090, lng: -71.5350 }; // Arequipa

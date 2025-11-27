@@ -63,20 +63,49 @@
                     <tbody>
                         @php
                             $items = [];
-                            // Intentar obtener desde la relación platos
+                            // Primero intentar obtener desde la relación platos
                             if($pedido->platos && $pedido->platos->count() > 0) {
                                 foreach($pedido->platos as $plato) {
                                     $items[] = [
                                         'nombre' => $plato->nombre,
-                                        'cantidad' => $plato->pivot->cantidad,
-                                        'precio' => $plato->pivot->precio,
-                                        'subtotal' => $plato->pivot->cantidad * $plato->pivot->precio
+                                        'cantidad' => $plato->pivot->cantidad ?? 1,
+                                        'precio' => $plato->pivot->precio ?? $plato->precio,
+                                        'subtotal' => ($plato->pivot->cantidad ?? 1) * ($plato->pivot->precio ?? $plato->precio),
                                     ];
                                 }
                             } 
-                            // Si no hay relación, intentar desde carrito JSON
-                            elseif($pedido->carrito && is_array($pedido->carrito)) {
-                                $items = $pedido->carrito;
+                            // Si no hay platos, intentar obtener del carrito JSON
+                            elseif($pedido->carrito) {
+                                // Manejar tanto string JSON como array (el modelo tiene cast 'array' pero puede fallar)
+                                if(is_string($pedido->carrito)) {
+                                    $carritoData = json_decode($pedido->carrito, true);
+                                    // Si json_decode falla, intentar como array directamente
+                                    if(json_last_error() !== JSON_ERROR_NONE) {
+                                        $carritoData = null;
+                                    }
+                                } else {
+                                    $carritoData = $pedido->carrito;
+                                }
+                                
+                                // Procesar el carrito si es un array válido
+                                if(is_array($carritoData) && count($carritoData) > 0) {
+                                    // Convertir array asociativo (con IDs como claves) a array indexado
+                                    $carritoArray = array_values($carritoData);
+                                    
+                                    foreach($carritoArray as $item) {
+                                        // Verificar que el item sea un array con los datos necesarios
+                                        if(is_array($item) && (isset($item['nombre']) || isset($item['id']))) {
+                                            $cantidad = isset($item['cantidad']) ? (int)$item['cantidad'] : 1;
+                                            $precio = isset($item['precio']) ? (float)$item['precio'] : 0;
+                                            $items[] = [
+                                                'nombre' => $item['nombre'] ?? 'Producto',
+                                                'cantidad' => $cantidad,
+                                                'precio' => $precio,
+                                                'subtotal' => $cantidad * $precio,
+                                            ];
+                                        }
+                                    }
+                                }
                             }
                         @endphp
 
@@ -93,7 +122,7 @@
                                 </td>
                                 <td class="text-end">S/ {{ number_format($item['precio'] ?? 0, 2) }}</td>
                                 <td class="text-end fw-bold text-success">
-                                    S/ {{ number_format(($item['cantidad'] ?? 0) * ($item['precio'] ?? 0), 2) }}
+                                    S/ {{ number_format($item['subtotal'] ?? (($item['cantidad'] ?? 0) * ($item['precio'] ?? 0)), 2) }}
                                 </td>
                             </tr>
                         @empty

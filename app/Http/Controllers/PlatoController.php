@@ -15,4 +15,9 @@ class PlatoController extends Controller
         // Enviar los platos a la vista 'menu.blade.php'
         return view('menu', compact('platos'));
     }
+
+    public function show(Plato $plato)
+    {
+        return view('menu.show', compact('plato'));
+    }
 }

@@ -236,7 +236,10 @@ class PedidoController extends Controller
             ->first();
 
         if (!$pedido) {
-            return view('seguimiento', ['error' => 'Pedido no encontrado']);
+            return view('seguimiento', [
+                'pedido' => null,
+                'error' => 'Pedido no encontrado',
+            ]);
         }
 
         return view('seguimiento', compact('pedido'));
