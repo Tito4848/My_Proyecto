@@ -150,7 +150,12 @@
                             <x-dropdown-link :href="route('mis-compras')" class="flex items-center">
                                 <i class="fas fa-history me-3 text-info" style="width: 20px;"></i>
                                 <span>{{ __('Mis Compras') }}</span>
-</x-dropdown-link>
+                            </x-dropdown-link>
+
+                            <x-dropdown-link :href="route('mis-reservas')" class="flex items-center">
+                                <i class="fas fa-calendar-check me-3 text-warning" style="width: 20px;"></i>
+                                <span>{{ __('Mis Reservas') }}</span>
+                            </x-dropdown-link>
 
                             <!-- Logout -->
                             <form method="POST" action="{{ route('logout') }}">

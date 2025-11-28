@@ -208,6 +208,13 @@
                         <span>Usuarios</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.reservas.index') }}" 
+                       class="nav-link {{ request()->routeIs('admin.reservas.*') ? 'active' : '' }}">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Reservas</span>
+                    </a>
+                </li>
                 <li class="nav-item mt-4">
                     <a href="{{ route('inicio') }}" class="nav-link">
                         <i class="fas fa-home"></i>

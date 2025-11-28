@@ -259,6 +259,26 @@
                     </div>
                 </div>
 
+                <!-- Información de Reserva (se muestra cuando se selecciona una mesa con reserva) -->
+                <div id="info-reserva" class="alert alert-info d-none mb-3" style="display: none !important;">
+                    <h6 class="fw-bold mb-2">
+                        <i class="fas fa-info-circle me-2"></i>Información de Reserva
+                    </h6>
+                    <div id="reserva-detalle">
+                        <p class="mb-1"><strong>Reservado por:</strong> <span id="reserva-nombre"></span></p>
+                        <p class="mb-1"><strong>Estado:</strong> <span id="reserva-estado"></span></p>
+                        <p class="mb-2"><strong>Fecha y Hora:</strong> <span id="reserva-fecha-hora"></span></p>
+                        <div id="reserva-acciones" class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-danger" id="btn-cancelar-reserva">
+                                <i class="fas fa-times me-1"></i>Cancelar Reserva
+                            </button>
+                            <button type="button" class="btn btn-sm btn-warning" id="btn-cambiar-mesa" data-bs-toggle="modal" data-bs-target="#modalCambiarMesa">
+                                <i class="fas fa-exchange-alt me-1"></i>Cambiar Mesa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Grid de Mesas -->
                 <div class="mesas-grid" id="mesas-grid">
                     @if(isset($mesas) && $mesas->count() > 0)
@@ -272,20 +292,34 @@
                                     if (!$disponible && $clase == 'libre') {
                                         $clase = 'reservada';
                                     }
+                                    // Obtener reserva activa si existe
+                                    $reservaActiva = $mesa->reservas()
+                                        ->where('estado', '!=', 'cancelada')
+                                        ->where('estado', '!=', 'completada')
+                                        ->whereDate('fecha', $fechaCheck)
+                                        ->where('hora', $horaCheck)
+                                        ->with('usuario')
+                                        ->first();
                                 } catch (\Exception $e) {
                                     $clase = $mesa->estado ?? 'libre';
+                                    $reservaActiva = null;
                                 }
                             @endphp
                             <div class="mesa-item {{ $clase }} {{ old('mesa_id') == $mesa->id ? 'selected' : '' }}"
                                  data-mesa-id="{{ $mesa->id }}"
                                  data-capacidad="{{ $mesa->capacidad }}"
                                  data-estado="{{ $mesa->estado ?? 'libre' }}"
-                                 onclick="seleccionarMesa({{ $mesa->id }}, {{ $mesa->capacidad }}, '{{ $clase }}')">
+                                 data-reserva-id="{{ $reservaActiva ? $reservaActiva->id : '' }}"
+                                 onclick="seleccionarMesa({{ $mesa->id }}, {{ $mesa->capacidad }}, '{{ $clase }}', {{ $reservaActiva ? $reservaActiva->id : 'null' }})">
                                 <div class="mesa-numero">{{ $mesa->numero }}</div>
                                 <div class="mesa-capacidad">
                                     <i class="fas fa-users"></i> {{ $mesa->capacidad }}
                                 </div>
-                                @if(!empty($mesa->ubicacion))
+                                @if($reservaActiva)
+                                    <small class="text-muted" style="font-size: 0.65rem; margin-top: 2px;">
+                                        <i class="fas fa-user"></i> {{ $reservaActiva->usuario ? $reservaActiva->usuario->name : $reservaActiva->nombre }}
+                                    </small>
+                                @elseif(!empty($mesa->ubicacion))
                                     <small class="text-muted" style="font-size: 0.6rem;">{{ $mesa->ubicacion }}</small>
                                 @endif
                             </div>
@@ -314,12 +348,54 @@
     </div>
 </div>
 
+<!-- Modal para Cambiar Mesa -->
+<div class="modal fade" id="modalCambiarMesa" tabindex="-1" aria-labelledby="modalCambiarMesaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCambiarMesaLabel">
+                    <i class="fas fa-exchange-alt me-2"></i>Cambiar de Mesa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formCambiarMesa" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <input type="hidden" id="cambiar-reserva-id" name="reserva_id">
+                    <input type="hidden" id="cambiar-fecha" name="fecha">
+                    <input type="hidden" id="cambiar-hora" name="hora">
+                    <div class="mb-3">
+                        <label for="nueva_mesa_id" class="form-label">Selecciona la nueva mesa:</label>
+                        <select id="nueva_mesa_id" name="nueva_mesa_id" class="form-select" required>
+                            <option value="">Selecciona una mesa...</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <small>
+                            <i class="fas fa-info-circle me-1"></i>
+                            Se mostrarán solo las mesas disponibles para la fecha y hora seleccionadas.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check me-1"></i>Confirmar Cambio
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 let mesaSeleccionada = null;
+let reservaActual = null;
 
-function seleccionarMesa(mesaId, capacidad, estado) {
-    if (estado === 'ocupada' || estado === 'reservada') {
-        return; // No permitir seleccionar mesas ocupadas o reservadas
+function seleccionarMesa(mesaId, capacidad, estado, reservaId = null) {
+    // Si la mesa está ocupada, no permitir selección
+    if (estado === 'ocupada') {
+        return;
     }
     
     // Remover selección anterior
@@ -333,8 +409,190 @@ function seleccionarMesa(mesaId, capacidad, estado) {
         mesaElement.classList.add('selected');
         document.getElementById('mesa_id').value = mesaId;
         mesaSeleccionada = mesaId;
+        
+        // Si tiene reserva, obtener información
+        if (reservaId) {
+            obtenerInfoReserva(mesaId, reservaId);
+        } else {
+            ocultarInfoReserva();
+        }
     }
 }
+
+function obtenerInfoReserva(mesaId, reservaId) {
+    const fecha = document.getElementById('fecha').value;
+    const hora = document.getElementById('hora').value;
+    
+    if (!fecha || !hora) {
+        ocultarInfoReserva();
+        return;
+    }
+    
+    fetch(`{{ route('reserva.obtener-reserva-mesa') }}?mesa_id=${mesaId}&fecha=${fecha}&hora=${hora}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.existe && data.reserva) {
+                mostrarInfoReserva(data.reserva);
+                reservaActual = data.reserva;
+            } else {
+                ocultarInfoReserva();
+            }
+        })
+        .catch(error => {
+            console.error('Error al obtener información de reserva:', error);
+            ocultarInfoReserva();
+        });
+}
+
+function mostrarInfoReserva(reserva) {
+    const infoDiv = document.getElementById('info-reserva');
+    const nombreSpan = document.getElementById('reserva-nombre');
+    const estadoSpan = document.getElementById('reserva-estado');
+    const fechaHoraSpan = document.getElementById('reserva-fecha-hora');
+    const accionesDiv = document.getElementById('reserva-acciones');
+    
+    nombreSpan.textContent = reserva.usuario_nombre || reserva.nombre;
+    
+    // Formatear estado
+    const estados = {
+        'pendiente': 'Pendiente',
+        'confirmada': 'Confirmada',
+        'cancelada': 'Cancelada',
+        'completada': 'Completada'
+    };
+    estadoSpan.textContent = estados[reserva.estado] || reserva.estado;
+    estadoSpan.className = reserva.estado === 'confirmada' ? 'badge bg-success' : 
+                           reserva.estado === 'pendiente' ? 'badge bg-warning' : 
+                           reserva.estado === 'cancelada' ? 'badge bg-danger' : 'badge bg-secondary';
+    
+    // Formatear fecha y hora
+    const fecha = new Date(reserva.fecha);
+    const fechaFormateada = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    fechaHoraSpan.textContent = `${fechaFormateada} a las ${reserva.hora}`;
+    
+    // Mostrar/ocultar botones según permisos
+    if (reserva.puede_cancelar) {
+        accionesDiv.style.display = 'flex';
+        document.getElementById('btn-cancelar-reserva').onclick = () => cancelarReserva(reserva.id);
+        document.getElementById('btn-cambiar-mesa').onclick = () => prepararCambioMesa(reserva.id);
+    } else {
+        accionesDiv.style.display = 'none';
+    }
+    
+    infoDiv.classList.remove('d-none');
+    infoDiv.style.display = 'block';
+}
+
+function ocultarInfoReserva() {
+    const infoDiv = document.getElementById('info-reserva');
+    infoDiv.classList.add('d-none');
+    infoDiv.style.display = 'none';
+    reservaActual = null;
+}
+
+function cancelarReserva(reservaId) {
+    if (!confirm('¿Estás seguro de que deseas cancelar esta reserva?')) {
+        return;
+    }
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `{{ url('/reserva') }}/${reservaId}/cancelar`;
+    
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = '{{ csrf_token() }}';
+    form.appendChild(csrfToken);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function prepararCambioMesa(reservaId) {
+    const fecha = document.getElementById('fecha').value;
+    const hora = document.getElementById('hora').value;
+    const personas = document.getElementById('personas').value;
+    
+    document.getElementById('cambiar-reserva-id').value = reservaId;
+    document.getElementById('cambiar-fecha').value = fecha;
+    document.getElementById('cambiar-hora').value = hora;
+    
+    // Cargar mesas disponibles
+    cargarMesasParaCambio(fecha, hora, personas, reservaId);
+}
+
+function cargarMesasParaCambio(fecha, hora, personas, reservaIdExcluir) {
+    fetch(`{{ route('reserva.obtener-mesas') }}?fecha=${fecha}&hora=${hora}&personas=${personas}`)
+        .then(response => response.json())
+        .then(mesas => {
+            const select = document.getElementById('nueva_mesa_id');
+            select.innerHTML = '<option value="">Selecciona una mesa...</option>';
+            
+            mesas.forEach(mesa => {
+                // Excluir la mesa actual de la reserva
+                if (mesa.id != reservaActual?.mesa_id && mesa.disponible) {
+                    const option = document.createElement('option');
+                    option.value = mesa.id;
+                    option.textContent = `${mesa.numero} - Capacidad: ${mesa.capacidad} personas`;
+                    select.appendChild(option);
+                }
+            });
+            
+            if (select.options.length === 1) {
+                select.innerHTML = '<option value="">No hay mesas disponibles</option>';
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar mesas:', error);
+        });
+}
+
+// Manejar envío del formulario de cambiar mesa
+document.getElementById('formCambiarMesa').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const reservaId = document.getElementById('cambiar-reserva-id').value;
+    const nuevaMesaId = document.getElementById('nueva_mesa_id').value;
+    const fecha = document.getElementById('cambiar-fecha').value;
+    const hora = document.getElementById('cambiar-hora').value;
+    
+    if (!nuevaMesaId) {
+        alert('Por favor, selecciona una mesa.');
+        return;
+    }
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `{{ url('/reserva') }}/${reservaId}/cambiar-mesa`;
+    
+    const csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = '_token';
+    csrfToken.value = '{{ csrf_token() }}';
+    form.appendChild(csrfToken);
+    
+    const nuevaMesaInput = document.createElement('input');
+    nuevaMesaInput.type = 'hidden';
+    nuevaMesaInput.name = 'nueva_mesa_id';
+    nuevaMesaInput.value = nuevaMesaId;
+    form.appendChild(nuevaMesaInput);
+    
+    const fechaInput = document.createElement('input');
+    fechaInput.type = 'hidden';
+    fechaInput.name = 'fecha';
+    fechaInput.value = fecha;
+    form.appendChild(fechaInput);
+    
+    const horaInput = document.createElement('input');
+    horaInput.type = 'hidden';
+    horaInput.name = 'hora';
+    horaInput.value = hora;
+    form.appendChild(horaInput);
+    
+    document.body.appendChild(form);
+    form.submit();
+});
 
 function actualizarMesasDisponibles() {
     const fecha = document.getElementById('fecha').value;
@@ -342,6 +600,7 @@ function actualizarMesasDisponibles() {
     const personas = document.getElementById('personas').value;
     
     if (!fecha || !hora || !personas) {
+        ocultarInfoReserva();
         return;
     }
     
@@ -351,21 +610,55 @@ function actualizarMesasDisponibles() {
             const grid = document.getElementById('mesas-grid');
             grid.innerHTML = '';
             
+            // Limpiar selección anterior
+            mesaSeleccionada = null;
+            document.getElementById('mesa_id').value = '';
+            ocultarInfoReserva();
+            
             mesas.forEach(mesa => {
                 const mesaDiv = document.createElement('div');
-                mesaDiv.className = `mesa-item libre`;
+                
+                // Determinar clase según disponibilidad y reserva
+                let clase = 'libre';
+                if (mesa.estado === 'ocupada') {
+                    clase = 'ocupada';
+                } else if (mesa.reserva) {
+                    clase = 'reservada';
+                } else if (mesa.disponible) {
+                    clase = 'libre';
+                }
+                
+                mesaDiv.className = `mesa-item ${clase}`;
                 mesaDiv.setAttribute('data-mesa-id', mesa.id);
                 mesaDiv.setAttribute('data-capacidad', mesa.capacidad);
-                mesaDiv.onclick = () => seleccionarMesa(mesa.id, mesa.capacidad, 'libre');
+                mesaDiv.setAttribute('data-estado', mesa.estado);
+                if (mesa.reserva) {
+                    mesaDiv.setAttribute('data-reserva-id', mesa.reserva.id);
+                }
                 
-                mesaDiv.innerHTML = `
+                const reservaId = mesa.reserva ? mesa.reserva.id : null;
+                mesaDiv.onclick = () => {
+                    if (clase !== 'ocupada') {
+                        seleccionarMesa(mesa.id, mesa.capacidad, clase, reservaId);
+                    }
+                };
+                
+                let contenido = `
                     <div class="mesa-numero">${mesa.numero}</div>
                     <div class="mesa-capacidad">
                         <i class="fas fa-users"></i> ${mesa.capacidad}
                     </div>
-                    ${mesa.ubicacion ? `<small class="text-muted" style="font-size: 0.6rem;">${mesa.ubicacion}</small>` : ''}
                 `;
                 
+                if (mesa.reserva) {
+                    contenido += `<small class="text-muted" style="font-size: 0.65rem; margin-top: 2px;">
+                        <i class="fas fa-user"></i> ${mesa.reserva.usuario_nombre || mesa.reserva.nombre}
+                    </small>`;
+                } else if (mesa.ubicacion) {
+                    contenido += `<small class="text-muted" style="font-size: 0.6rem;">${mesa.ubicacion}</small>`;
+                }
+                
+                mesaDiv.innerHTML = contenido;
                 grid.appendChild(mesaDiv);
             });
             

@@ -16,6 +16,7 @@ use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\Admin\PlatoAdminController;
 use App\Http\Controllers\Admin\PedidoController as AdminPedidoController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ReservaController as AdminReservaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +35,7 @@ Route::prefix('admin')
     Route::resource('platos', PlatoAdminController::class);
     Route::resource('pedidos', AdminPedidoController::class);
     Route::resource('usuarios', UserController::class);
+    Route::resource('reservas', AdminReservaController::class);
     
     // Tracking
     Route::post('/pedidos/{id}/actualizar-ubicacion', [\App\Http\Controllers\Admin\TrackingController::class, 'actualizarUbicacion'])->name('pedidos.actualizar-ubicacion');
@@ -67,7 +69,10 @@ Route::get('/contacto', [ContactoController::class, 'index'])->name('contacto');
 Route::post('/contacto/enviar', [ContactoController::class, 'enviar'])->name('contacto.enviar');
 Route::get('/reserva', [ReservaController::class, 'index'])->name('reserva');
 Route::get('/reserva/mesas-disponibles', [ReservaController::class, 'obtenerMesasDisponibles'])->name('reserva.obtener-mesas');
+Route::get('/reserva/reserva-mesa', [ReservaController::class, 'obtenerReservaMesa'])->name('reserva.obtener-reserva-mesa');
 Route::post('/reserva', [ReservaController::class, 'store'])->name('reserva.store');
+Route::post('/reserva/{id}/cancelar', [ReservaController::class, 'cancelar'])->name('reserva.cancelar')->middleware('auth');
+Route::post('/reserva/{id}/cambiar-mesa', [ReservaController::class, 'cambiarMesa'])->name('reserva.cambiar-mesa')->middleware('auth');
 
 // Delivery
 Route::get('/delivery', [DeliveryController::class, 'index'])->name('delivery');
@@ -95,6 +100,14 @@ Route::get('/mis-compras', function () {
         ->get();
     return view('mis-compras', compact('pedidos'));
 })->middleware('auth')->name('mis-compras');
+
+Route::get('/mis-reservas', function () {
+    $reservas = \App\Models\Reserva::where('user_id', auth()->id())
+        ->with('mesa')
+        ->orderBy('created_at', 'desc')
+        ->get();
+    return view('mis-reservas', compact('reservas'));
+})->middleware('auth')->name('mis-reservas');
 
 Route::get('/perfil', [ProfileController::class, 'edit'])
     ->middleware(['auth'])

@@ -16,7 +16,18 @@ class ReservaController extends Controller
         
         try {
             if (Schema::hasTable('mesas')) {
-                $mesas = Mesa::orderBy('numero')->get();
+                $fecha = request('fecha', date('Y-m-d'));
+                $hora = request('hora', date('H:i'));
+                
+                $mesas = Mesa::with(['reservas' => function($query) use ($fecha, $hora) {
+                    $query->where('estado', '!=', 'cancelada')
+                          ->where('estado', '!=', 'completada')
+                          ->whereDate('fecha', $fecha)
+                          ->where('hora', $hora)
+                          ->with('usuario');
+                }])
+                ->orderBy('numero')
+                ->get();
             }
         } catch (\Exception $e) {
             // Si hay algún error, usar colección vacía
@@ -44,28 +55,226 @@ class ReservaController extends Controller
             $personas = $request->personas;
 
             $mesas = Mesa::where('capacidad', '>=', $personas)
+                ->with(['reservas' => function($query) use ($fecha, $hora) {
+                    $query->where('estado', '!=', 'cancelada')
+                          ->where('estado', '!=', 'completada')
+                          ->whereDate('fecha', $fecha)
+                          ->where('hora', $hora)
+                          ->with('usuario');
+                }])
                 ->get()
-                ->filter(function($mesa) use ($fecha, $hora) {
+                ->map(function($mesa) use ($fecha, $hora) {
+                    $disponible = false;
+                    $reservaActiva = null;
+                    
                     try {
-                        return $mesa->estaDisponible($fecha, $hora);
+                        $disponible = $mesa->estaDisponible($fecha, $hora);
+                        $reservaActiva = $mesa->reservas->first();
                     } catch (\Exception $e) {
-                        return false;
+                        $disponible = false;
                     }
-                })
-                ->map(function($mesa) {
+                    
                     return [
                         'id' => $mesa->id,
                         'numero' => $mesa->numero,
                         'capacidad' => $mesa->capacidad,
                         'ubicacion' => $mesa->ubicacion,
                         'estado' => $mesa->estado,
+                        'disponible' => $disponible,
+                        'reserva' => $reservaActiva ? [
+                            'id' => $reservaActiva->id,
+                            'nombre' => $reservaActiva->nombre,
+                            'usuario_nombre' => $reservaActiva->usuario ? $reservaActiva->usuario->name : $reservaActiva->nombre,
+                            'estado' => $reservaActiva->estado,
+                            'fecha' => $reservaActiva->fecha->format('Y-m-d'),
+                            'hora' => $reservaActiva->hora,
+                        ] : null,
                     ];
+                })
+                ->filter(function($mesa) {
+                    // Mostrar todas las mesas (disponibles y con reservas)
+                    // El frontend se encargará de mostrar la información correcta
+                    return true;
                 })
                 ->values();
 
             return response()->json($mesas);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al obtener mesas disponibles'], 500);
+        }
+    }
+
+    // Obtener información de reserva de una mesa
+    public function obtenerReservaMesa(Request $request)
+    {
+        try {
+            $request->validate([
+                'mesa_id' => 'required|exists:mesas,id',
+                'fecha' => 'required|date',
+                'hora' => 'required|string',
+            ]);
+
+            $mesa = Mesa::findOrFail($request->mesa_id);
+            
+            $reserva = $mesa->reservas()
+                ->where('estado', '!=', 'cancelada')
+                ->where('estado', '!=', 'completada')
+                ->whereDate('fecha', $request->fecha)
+                ->where('hora', $request->hora)
+                ->with('usuario')
+                ->first();
+
+            if ($reserva) {
+                return response()->json([
+                    'existe' => true,
+                    'reserva' => [
+                        'id' => $reserva->id,
+                        'nombre' => $reserva->nombre,
+                        'usuario_nombre' => $reserva->usuario ? $reserva->usuario->name : $reserva->nombre,
+                        'email' => $reserva->email,
+                        'telefono' => $reserva->telefono,
+                        'personas' => $reserva->personas,
+                        'estado' => $reserva->estado,
+                        'fecha' => $reserva->fecha->format('Y-m-d'),
+                        'hora' => $reserva->hora,
+                        'notas' => $reserva->notas,
+                        'puede_cancelar' => auth()->check() && ($reserva->user_id == auth()->id() || (auth()->user()->is_admin ?? false)),
+                    ],
+                ]);
+            }
+
+            return response()->json(['existe' => false]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener información de la reserva'], 500);
+        }
+    }
+
+    // Cancelar una reserva
+    public function cancelar(Request $request, $id)
+    {
+        try {
+            $reserva = Reserva::findOrFail($id);
+
+            // Verificar permisos: solo el dueño de la reserva o admin puede cancelar
+            if (!auth()->check()) {
+                return back()->withErrors(['error' => 'Debes estar autenticado para cancelar una reserva.']);
+            }
+
+            $user = auth()->user();
+            $isAdmin = $user->is_admin ?? false;
+            if ($reserva->user_id != auth()->id() && !$isAdmin) {
+                return back()->withErrors(['error' => 'No tienes permisos para cancelar esta reserva.']);
+            }
+
+            // Validar que la reserva no esté ya cancelada o completada
+            if (in_array($reserva->estado, ['cancelada', 'completada'])) {
+                return back()->withErrors(['error' => 'Esta reserva ya está ' . $reserva->estado . '.']);
+            }
+
+            // Actualizar estado de la reserva
+            $reserva->estado = 'cancelada';
+            $reserva->save();
+
+            // Actualizar estado de la mesa si estaba reservada
+            if ($reserva->mesa_id) {
+                $mesa = Mesa::find($reserva->mesa_id);
+                if ($mesa && $mesa->estado === 'reservada') {
+                    // Verificar si hay otras reservas activas para esta mesa
+                    $otrasReservas = Reserva::where('mesa_id', $mesa->id)
+                        ->where('id', '!=', $reserva->id)
+                        ->where('estado', '!=', 'cancelada')
+                        ->where('estado', '!=', 'completada')
+                        ->where('fecha', '>=', now()->toDateString())
+                        ->exists();
+                    
+                    if (!$otrasReservas) {
+                        $mesa->estado = 'libre';
+                        $mesa->save();
+                    }
+                }
+            }
+
+            return redirect()->route('reserva')
+                ->with('success', 'Reserva cancelada correctamente.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Error al cancelar la reserva. Por favor, intenta nuevamente.']);
+        }
+    }
+
+    // Cambiar de mesa
+    public function cambiarMesa(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'nueva_mesa_id' => 'required|exists:mesas,id',
+                'fecha' => 'required|date',
+                'hora' => 'required|string',
+            ]);
+
+            $reserva = Reserva::findOrFail($id);
+
+            // Verificar permisos
+            if (!auth()->check()) {
+                return back()->withErrors(['error' => 'Debes estar autenticado para cambiar de mesa.']);
+            }
+
+            $user = auth()->user();
+            $isAdmin = $user->is_admin ?? false;
+            if ($reserva->user_id != auth()->id() && !$isAdmin) {
+                return back()->withErrors(['error' => 'No tienes permisos para cambiar esta reserva.']);
+            }
+
+            // Validar que la reserva no esté cancelada o completada
+            if (in_array($reserva->estado, ['cancelada', 'completada'])) {
+                return back()->withErrors(['error' => 'No se puede cambiar la mesa de una reserva ' . $reserva->estado . '.']);
+            }
+
+            $nuevaMesa = Mesa::findOrFail($request->nueva_mesa_id);
+
+            // Verificar disponibilidad de la nueva mesa
+            if (!$nuevaMesa->estaDisponible($request->fecha, $request->hora)) {
+                return back()->withErrors(['nueva_mesa_id' => 'La nueva mesa no está disponible para esa fecha y hora.']);
+            }
+
+            // Verificar capacidad
+            if ($nuevaMesa->capacidad < $reserva->personas) {
+                return back()->withErrors(['nueva_mesa_id' => 'La nueva mesa no tiene capacidad suficiente.']);
+            }
+
+            // Liberar la mesa anterior si estaba reservada
+            if ($reserva->mesa_id) {
+                $mesaAnterior = Mesa::find($reserva->mesa_id);
+                if ($mesaAnterior && $mesaAnterior->estado === 'reservada') {
+                    $otrasReservas = Reserva::where('mesa_id', $mesaAnterior->id)
+                        ->where('id', '!=', $reserva->id)
+                        ->where('estado', '!=', 'cancelada')
+                        ->where('estado', '!=', 'completada')
+                        ->where('fecha', '>=', now()->toDateString())
+                        ->exists();
+                    
+                    if (!$otrasReservas) {
+                        $mesaAnterior->estado = 'libre';
+                        $mesaAnterior->save();
+                    }
+                }
+            }
+
+            // Asignar la nueva mesa
+            $reserva->mesa_id = $request->nueva_mesa_id;
+            $reserva->fecha = $request->fecha;
+            $reserva->hora = $request->hora;
+            $reserva->save();
+
+            // Actualizar estado de la nueva mesa
+            if ($nuevaMesa->estado === 'libre') {
+                $nuevaMesa->estado = 'reservada';
+                $nuevaMesa->save();
+            }
+
+            return redirect()->route('reserva')
+                ->with('success', 'Mesa cambiada correctamente.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Error al cambiar de mesa. Por favor, intenta nuevamente.']);
         }
     }
 
@@ -132,7 +341,7 @@ class ReservaController extends Controller
                 'personas' => $request->personas,
                 'fecha' => $request->fecha,
                 'hora' => $request->hora,
-                'estado' => 'pendiente',
+                'estado' => 'confirmada',
                 'notas' => $request->notas,
             ]);
 

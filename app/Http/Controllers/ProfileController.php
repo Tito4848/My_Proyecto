@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use App\Models\Pedido;
+use App\Models\Reserva;
 
 class ProfileController extends Controller
 {
@@ -22,9 +23,15 @@ class ProfileController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         
+        $reservas = Reserva::where('user_id', $request->user()->id)
+            ->with('mesa')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
         return view('profile.edit', [
             'user' => $request->user(),
             'pedidos' => $pedidos,
+            'reservas' => $reservas,
         ]);
     }
 

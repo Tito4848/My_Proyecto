@@ -56,6 +56,49 @@
     </div>
 </div>
 
+<!-- Estadísticas de reservas -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card warning animate-fade-in">
+            <div class="icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <h3 class="mb-1">{{ $totalReservas }}</h3>
+            <p class="text-muted mb-0">Total Reservas</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card success animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="mb-1">{{ $reservasConfirmadas }}</h3>
+            <p class="text-muted mb-0">Confirmadas</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card danger animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3 class="mb-1">{{ $reservasPendientes }}</h3>
+            <p class="text-muted mb-0">Pendientes</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="stat-card primary animate-fade-in" style="animation-delay: 0.3s;">
+            <div class="icon">
+                <i class="fas fa-calendar-day"></i>
+            </div>
+            <h3 class="mb-1">{{ $reservasHoy }}</h3>
+            <p class="text-muted mb-0">Reservas de Hoy</p>
+        </div>
+    </div>
+</div>
+
 <!-- Estadísticas de pedidos -->
 <div class="row g-4 mb-4">
     <div class="col-md-4">
@@ -123,6 +166,17 @@
             </a>
         </div>
     </div>
+
+    <div class="col-md-4">
+        <div class="modern-card p-4 text-center hover-lift">
+            <i class="fas fa-calendar-check fa-3x text-info mb-3"></i>
+            <h5 class="mb-3">Gestionar Reservas</h5>
+            <p class="text-muted mb-3">Administra las reservas de mesas</p>
+            <a href="{{ route('admin.reservas.index') }}" class="btn btn-modern btn-info w-100">
+                <i class="fas fa-arrow-right me-2"></i>Ir a Reservas
+            </a>
+        </div>
+    </div>
 </div>
 
 <!-- Pedidos recientes -->
@@ -166,6 +220,65 @@
                 <td>{{ $pedido->created_at->format('d/m/Y H:i') }}</td>
                 <td>
                     <a href="{{ route('admin.pedidos.show', $pedido) }}" class="btn btn-sm btn-modern btn-primary">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+</div>
+@endif
+
+<!-- Reservas recientes -->
+@if($reservasRecientes->count() > 0)
+<div class="admin-table animate-fade-in mt-4">
+    <div class="p-4 border-bottom">
+        <h5 class="mb-0">
+            <i class="fas fa-calendar-check me-2 text-primary"></i>Reservas Recientes
+        </h5>
+    </div>
+    <table class="table table-hover mb-0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Mesa</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($reservasRecientes as $reserva)
+            <tr>
+                <td>#{{ $reserva->id }}</td>
+                <td>{{ $reserva->nombre }}</td>
+                <td>
+                    @if($reserva->mesa)
+                        <span class="badge bg-info">{{ $reserva->mesa->numero }}</span>
+                    @else
+                        <span class="text-muted">Sin mesa</span>
+                    @endif
+                </td>
+                <td>{{ $reserva->fecha->format('d/m/Y') }}</td>
+                <td>{{ $reserva->hora }}</td>
+                <td>
+                    @php
+                        $colors = [
+                            'pendiente' => 'warning',
+                            'confirmada' => 'success',
+                            'cancelada' => 'danger',
+                            'completada' => 'secondary',
+                        ];
+                    @endphp
+                    <span class="badge bg-{{ $colors[$reserva->estado] ?? 'secondary' }}">
+                        {{ ucfirst($reserva->estado) }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{{ route('admin.reservas.show', $reserva) }}" class="btn btn-sm btn-modern btn-primary">
                         <i class="fas fa-eye"></i>
                     </a>
                 </td>
