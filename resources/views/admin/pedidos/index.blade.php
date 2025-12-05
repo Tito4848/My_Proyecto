@@ -23,6 +23,7 @@
                     <th><i class="fas fa-hashtag me-2"></i>ID</th>
                     <th><i class="fas fa-user me-2"></i>Cliente</th>
                     <th><i class="fas fa-info-circle me-2"></i>Estado</th>
+                    <th><i class="fas fa-route me-2"></i>Seguimiento</th>
                     <th><i class="fas fa-money-bill-wave me-2"></i>Total</th>
                     <th><i class="fas fa-calendar me-2"></i>Fecha</th>
                     <th class="text-center"><i class="fas fa-cog me-2"></i>Acciones</th>
@@ -38,27 +39,52 @@
                             {{ $pedido->nombre }}
                         </td>
 
-                    <td>
-                        @php
-                            $colors = [
-                                'pendiente'   => 'warning',
-                                'preparando'  => 'info',
-                                'encamino'    => 'primary',
-                                'entregado'   => 'success',
-                            ];
+                        <td>
+                            @php
+                                $colors = [
+                                    'pendiente'   => 'warning',
+                                    'preparando'  => 'info',
+                                    'encamino'    => 'primary',
+                                    'entregado'   => 'success',
+                                ];
                                 $icons = [
                                     'pendiente' => 'clock',
                                     'preparando' => 'utensils',
                                     'encamino' => 'truck',
                                     'entregado' => 'check-circle',
                                 ];
-                        @endphp
+                            @endphp
 
                             <span class="badge bg-{{ $colors[$pedido->estado] ?? 'secondary' }} p-2">
                                 <i class="fas fa-{{ $icons[$pedido->estado] ?? 'info' }} me-1"></i>
-                            {{ ucfirst($pedido->estado) }}
-                        </span>
-                    </td>
+                                {{ ucfirst($pedido->estado) }}
+                            </span>
+                        </td>
+
+                        <td>
+                            @php
+                                $seguimientoColors = [
+                                    'recibido'   => 'secondary',
+                                    'preparando' => 'info',
+                                    'listo'      => 'warning',
+                                    'en_camino'  => 'primary',
+                                    'entregado'  => 'success',
+                                ];
+                                $seguimientoIcons = [
+                                    'recibido'   => 'Inbox',
+                                    'preparando' => 'utensils',
+                                    'listo'      => 'check-circle',
+                                    'en_camino'  => 'truck',
+                                    'entregado'  => 'check-double',
+                                ];
+                                $estadoSeguimiento = $pedido->estado_seguimiento ?? 'recibido';
+                            @endphp
+
+                            <span class="badge bg-{{ $seguimientoColors[$estadoSeguimiento] ?? 'secondary' }} p-2">
+                                <i class="fas fa-{{ $seguimientoIcons[$estadoSeguimiento] ?? 'info-circle' }} me-1"></i>
+                                {{ ucfirst(str_replace('_', ' ', $estadoSeguimiento)) }}
+                            </span>
+                        </td>
 
                         <td class="fw-bold text-success">S/ {{ number_format($pedido->total, 2) }}</td>
                         <td>{{ $pedido->created_at->format('d/m/Y H:i') }}</td>

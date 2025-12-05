@@ -57,26 +57,33 @@ Route::get('/sobre-nosotros', function () {
     return view('sobre-nosotros');
 })->name('sobre-nosotros');
 
-// Carrito
-Route::get('/carrito', [CarritoController::class, 'mostrar'])->name('carrito');
-Route::post('/carrito/agregar', [CarritoController::class, 'agregar'])->name('carrito.agregar');
-Route::delete('/carrito/{id}', [CarritoController::class, 'eliminar'])->name('carrito.eliminar');
-Route::delete('/carrito', [CarritoController::class, 'vaciar'])->name('vaciar');
+// Carrito (solo clientes autenticados)
+Route::middleware(['auth', 'client_only'])->group(function () {
+    Route::get('/carrito', [CarritoController::class, 'mostrar'])->name('carrito');
+    Route::post('/carrito/agregar', [CarritoController::class, 'agregar'])->name('carrito.agregar');
+    Route::delete('/carrito/{id}', [CarritoController::class, 'eliminar'])->name('carrito.eliminar');
+    Route::delete('/carrito', [CarritoController::class, 'vaciar'])->name('vaciar');
+});
 
 
-// Contacto y reserva
+// Contacto y reserva (reserva solo clientes)
 Route::get('/contacto', [ContactoController::class, 'index'])->name('contacto');
 Route::post('/contacto/enviar', [ContactoController::class, 'enviar'])->name('contacto.enviar');
-Route::get('/reserva', [ReservaController::class, 'index'])->name('reserva');
-Route::get('/reserva/mesas-disponibles', [ReservaController::class, 'obtenerMesasDisponibles'])->name('reserva.obtener-mesas');
-Route::get('/reserva/reserva-mesa', [ReservaController::class, 'obtenerReservaMesa'])->name('reserva.obtener-reserva-mesa');
-Route::post('/reserva', [ReservaController::class, 'store'])->name('reserva.store');
-Route::post('/reserva/{id}/cancelar', [ReservaController::class, 'cancelar'])->name('reserva.cancelar')->middleware('auth');
-Route::post('/reserva/{id}/cambiar-mesa', [ReservaController::class, 'cambiarMesa'])->name('reserva.cambiar-mesa')->middleware('auth');
+Route::middleware(['client_only'])->group(function () {
+    Route::get('/reserva', [ReservaController::class, 'index'])->name('reserva');
+    Route::get('/reserva/mesas-disponibles', [ReservaController::class, 'obtenerMesasDisponibles'])->name('reserva.obtener-mesas');
+    Route::get('/reserva/reserva-mesa', [ReservaController::class, 'obtenerReservaMesa'])->name('reserva.obtener-reserva-mesa');
+    Route::post('/reserva', [ReservaController::class, 'store'])->name('reserva.store');
+    Route::post('/reserva/{id}/cancelar', [ReservaController::class, 'cancelar'])->name('reserva.cancelar')->middleware('auth');
+    Route::post('/reserva/{id}/cambiar-mesa', [ReservaController::class, 'cambiarMesa'])->name('reserva.cambiar-mesa')->middleware('auth');
+}
+);
 
-// Delivery
-Route::get('/delivery', [DeliveryController::class, 'index'])->name('delivery');
-Route::post('/delivery', [DeliveryController::class, 'store'])->name('delivery.store');
+// Delivery (solo clientes autenticados)
+Route::middleware(['auth', 'client_only'])->group(function () {
+    Route::get('/delivery', [DeliveryController::class, 'index'])->name('delivery');
+    Route::post('/delivery', [DeliveryController::class, 'store'])->name('delivery.store');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -99,7 +106,7 @@ Route::get('/mis-compras', function () {
         ->orderBy('created_at', 'desc')
         ->get();
     return view('mis-compras', compact('pedidos'));
-})->middleware('auth')->name('mis-compras');
+})->middleware(['auth', 'client_only'])->name('mis-compras');
 
 Route::get('/mis-reservas', function () {
     $reservas = \App\Models\Reserva::where('user_id', auth()->id())
@@ -107,17 +114,17 @@ Route::get('/mis-reservas', function () {
         ->orderBy('created_at', 'desc')
         ->get();
     return view('mis-reservas', compact('reservas'));
-})->middleware('auth')->name('mis-reservas');
+})->middleware(['auth', 'client_only'])->name('mis-reservas');
 
 Route::get('/perfil', [ProfileController::class, 'edit'])
     ->middleware(['auth'])
     ->name('perfil');
     Route::get('/pago', [PedidoController::class, 'pago'])
-    ->middleware('auth')
+    ->middleware(['auth', 'client_only'])
     ->name('pago');
 
 Route::post('/pago/procesar', [PedidoController::class, 'procesarPago'])
-    ->middleware('auth')
+    ->middleware(['auth', 'client_only'])
     ->name('pago.procesar');
 
 Route::get('/menu/{plato}', [PlatoController::class, 'show'])->name('menu.show');

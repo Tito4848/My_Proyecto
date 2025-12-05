@@ -4,6 +4,12 @@
 
 @section('content')
 
+@if(session('success'))
+    <div class="container mt-4">
+        <x-alert type="success">{{ session('success') }}</x-alert>
+    </div>
+@endif
+
 <style>
     .hero-img {
         max-height: 600px;

@@ -31,9 +31,15 @@ class Kernel extends HttpKernel
         ],
     ];
 
-    protected $routeMiddleware = [
+    /**
+     * Alias de middlewares de ruta (Laravel 11/12+).
+     */
+    protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
-        
+
+        // Roles
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'employee' => \App\Http\Middleware\EmployeeMiddleware::class,
+        'client_only' => \App\Http\Middleware\BlockAdminEmployeeOnClient::class,
     ];
 }

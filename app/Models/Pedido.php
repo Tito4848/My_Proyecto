@@ -19,6 +19,7 @@ class Pedido extends Model
         'productos',
         'total',
         'estado',
+        // Campos de seguimiento de estado del pedido
         'estado_seguimiento',
         'fecha_recibido',
         'fecha_preparando',
@@ -26,6 +27,7 @@ class Pedido extends Model
         'fecha_en_camino',
         'fecha_entregado',
         'codigo_seguimiento',
+        // Campos de ubicación / tracking en mapa
         'latitud',
         'longitud',
         'direccion_entrega',
@@ -35,12 +37,14 @@ class Pedido extends Model
     // Si tu columna carrito es json, puedes usar:
     protected $casts = [
         'carrito' => 'array',
+        // Fechas de seguimiento
         'fecha_recibido' => 'datetime',
         'fecha_preparando' => 'datetime',
         'fecha_listo' => 'datetime',
         'fecha_en_camino' => 'datetime',
         'fecha_entregado' => 'datetime',
         'ultima_actualizacion_ubicacion' => 'datetime',
+        // Coordenadas
         'latitud' => 'decimal:8',
         'longitud' => 'decimal:8',
     ];

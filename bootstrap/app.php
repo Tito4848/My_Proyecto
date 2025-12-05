@@ -11,7 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Alias de middlewares de ruta (Laravel 11/12+)
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'client_only' => \App\Http\Middleware\BlockAdminEmployeeOnClient::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

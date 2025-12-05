@@ -25,14 +25,18 @@ class UserController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
-            'is_admin' => 'nullable|boolean',
+            'rol' => 'required|in:cliente,empleado,admin',
         ]);
+
+        $isAdmin = $request->rol === 'admin';
+        $isEmployee = $request->rol === 'empleado';
 
         User::create([
             'name'      => $request->name,
             'email'     => $request->email,
             'password'  => bcrypt($request->password),
-            'is_admin'  => $request->is_admin ? 1 : 0,
+            'is_admin'  => $isAdmin ? 1 : 0,
+            'is_employee' => $isEmployee ? 1 : 0,
         ]);
 
         return redirect()->route('admin.usuarios.index')
@@ -50,12 +54,13 @@ class UserController extends Controller
             'name' => 'required',
             'email' => "required|email|unique:users,email,$usuario->id",
             'password' => 'nullable|min:6',
-            'is_admin' => 'nullable|boolean',
+            'rol' => 'required|in:cliente,empleado,admin',
         ]);
 
         $usuario->name = $request->name;
         $usuario->email = $request->email;
-        $usuario->is_admin = $request->is_admin ? 1 : 0;
+        $usuario->is_admin = $request->rol === 'admin' ? 1 : 0;
+        $usuario->is_employee = $request->rol === 'empleado' ? 1 : 0;
 
         if ($request->password) {
             $usuario->password = bcrypt($request->password);

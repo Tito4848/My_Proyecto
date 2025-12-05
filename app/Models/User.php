@@ -22,6 +22,7 @@ class User extends Authenticatable
         'email',
         'password',
         'is_admin',
+        'is_employee',
         'avatar',
     ];
 
@@ -50,7 +51,12 @@ class User extends Authenticatable
 
     public function isAdmin()
     {
-        return $this->is_admin === 1;
+        return (bool) $this->is_admin;
+    }
+
+    public function isEmployee()
+    {
+        return (bool) $this->is_employee;
     }
     public function pedidos()
 {

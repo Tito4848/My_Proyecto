@@ -40,19 +40,29 @@
                             <i class="fas fa-user-circle me-2 text-primary"></i>
                             {{ $usuario->name }}
                         </td>
-                    <td>{{ $usuario->email }}</td>
+                        <td>{{ $usuario->email }}</td>
 
-                    <td>
-                        @if($usuario->is_admin)
+                        <td>
+                            @php
+                                $rol = $usuario->is_admin
+                                    ? 'admin'
+                                    : ($usuario->is_employee ? 'empleado' : 'cliente');
+                            @endphp
+
+                            @if($rol === 'admin')
                                 <span class="badge bg-success p-2">
                                     <i class="fas fa-crown me-1"></i>Administrador
                                 </span>
-                        @else
-                                <span class="badge bg-secondary p-2">
-                                    <i class="fas fa-user me-1"></i>Usuario
+                            @elseif($rol === 'empleado')
+                                <span class="badge bg-info p-2">
+                                    <i class="fas fa-id-badge me-1"></i>Empleado
                                 </span>
-                        @endif
-                    </td>
+                            @else
+                                <span class="badge bg-secondary p-2">
+                                    <i class="fas fa-user me-1"></i>Cliente
+                                </span>
+                            @endif
+                        </td>
 
                         <td>
                             <div class="d-flex gap-2 justify-content-center">

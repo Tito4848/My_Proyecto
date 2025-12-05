@@ -63,12 +63,11 @@ class PedidoController extends Controller
         // Calcular total
         $total = $this->calcularTotal();
 
-        // Generar código de seguimiento único
-        $codigoSeguimiento = 'SAL' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 8));
-
-        // Obtener coordenadas si hay dirección de entrega
+        // Solo generamos tracking si hay entrega a domicilio
+        $codigoSeguimiento = null;
         $coordenadas = ['lat' => null, 'lng' => null];
-        if ($request->has('direccion_entrega') && $request->direccion_entrega) {
+        if ($request->filled('direccion_entrega')) {
+            $codigoSeguimiento = 'SAL' . strtoupper(substr(md5(uniqid(rand(), true)), 0, 8));
             $coordenadas = $this->obtenerCoordenadasEntrega($request->direccion_entrega);
         }
 
@@ -76,7 +75,9 @@ class PedidoController extends Controller
         $datosPedido = [
             'user_id' => auth()->id(),
             'nombre' => $request->nombre,
-            'direccion' => 'Pago con ' . strtolower($metodoPago),
+            // Para compras desde el carrito no hay dirección de entrega,
+            // almacenamos un valor genérico y evitamos mezclarlo con el método de pago.
+            'direccion' => $request->direccion_entrega ?? 'Recoger en restaurante',
             'telefono' => $request->yape_numero ?? '000',
             'metodo_pago' => $metodoPago,
             'carrito' => json_encode(session('carrito')),
@@ -84,13 +85,15 @@ class PedidoController extends Controller
             'estado' => 'pendiente',
         ];
 
-        // Agregar campos de seguimiento (si las columnas existen en la BD)
-        $datosPedido['estado_seguimiento'] = 'recibido';
-        $datosPedido['fecha_recibido'] = now();
-        $datosPedido['codigo_seguimiento'] = $codigoSeguimiento;
-        $datosPedido['latitud'] = $coordenadas['lat'];
-        $datosPedido['longitud'] = $coordenadas['lng'];
-        $datosPedido['ultima_actualizacion_ubicacion'] = now();
+        // Agregar campos de seguimiento solo cuando hay entrega
+        if ($codigoSeguimiento) {
+            $datosPedido['estado_seguimiento'] = 'recibido';
+            $datosPedido['fecha_recibido'] = now();
+            $datosPedido['codigo_seguimiento'] = $codigoSeguimiento;
+            $datosPedido['latitud'] = $coordenadas['lat'];
+            $datosPedido['longitud'] = $coordenadas['lng'];
+            $datosPedido['ultima_actualizacion_ubicacion'] = now();
+        }
 
         // Crear el pedido
         try {

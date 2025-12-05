@@ -55,58 +55,64 @@
                             </td>
                             <td>{{ $pedido->created_at->format('d/m/Y H:i') }}</td>
                             <td class="text-center">
-                                <button class="btn btn-sm btn-modern btn-primary hover-scale" 
-                                        onclick="toggleDetalles({{ $pedido->id }})"
-                                        title="Ver detalles">
-                                    <i class="fas fa-eye"></i> Detalles
-                                </button>
+                                @if($pedido->direccion_entrega)
+                                    <button class="btn btn-sm btn-modern btn-primary hover-scale" 
+                                            onclick="toggleDetalles({{ $pedido->id }})"
+                                            title="Ver detalles">
+                                        <i class="fas fa-eye"></i> Detalles
+                                    </button>
+                                @else
+                                    <span class="text-muted small">Solo para delivery</span>
+                                @endif
                             </td>
                 </tr>
-                        <tr id="detalles-{{ $pedido->id }}" style="display:none;" class="table-light">
-                            <td colspan="5">
-                                <div class="p-4">
-                                    <h6 class="fw-bold mb-3">
-                                        <i class="fas fa-utensils me-2 text-primary"></i>Detalles del Pedido:
-                                    </h6>
-                                    @php
-                                        $items = [];
-                                        if($pedido->platos && $pedido->platos->count() > 0) {
-                                            foreach($pedido->platos as $plato) {
-                                                $items[] = [
-                                                    'nombre' => $plato->nombre,
-                                                    'cantidad' => $plato->pivot->cantidad,
-                                                    'precio' => $plato->pivot->precio,
-                                                ];
+                        @if($pedido->direccion_entrega)
+                            <tr id="detalles-{{ $pedido->id }}" style="display:none;" class="table-light">
+                                <td colspan="5">
+                                    <div class="p-4">
+                                        <h6 class="fw-bold mb-3">
+                                            <i class="fas fa-utensils me-2 text-primary"></i>Detalles del Pedido:
+                                        </h6>
+                                        @php
+                                            $items = [];
+                                            if($pedido->platos && $pedido->platos->count() > 0) {
+                                                foreach($pedido->platos as $plato) {
+                                                    $items[] = [
+                                                        'nombre' => $plato->nombre,
+                                                        'cantidad' => $plato->pivot->cantidad,
+                                                        'precio' => $plato->pivot->precio,
+                                                    ];
+                                                }
+                                            } elseif($pedido->carrito && is_array($pedido->carrito)) {
+                                                $items = $pedido->carrito;
                                             }
-                                        } elseif($pedido->carrito && is_array($pedido->carrito)) {
-                                            $items = $pedido->carrito;
-                                        }
-                                    @endphp
-                                    <div class="row g-3">
-                                        @foreach($items as $item)
-                                            <div class="col-md-6">
-                                                <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded">
-                                                    <div>
-                                                        <i class="fas fa-utensils me-2 text-primary"></i>
-                                                        <strong>{{ $item['nombre'] ?? 'N/A' }}</strong>
-                                                    </div>
-                                                    <div class="text-end">
-                                                        <small class="text-muted">Cant: {{ $item['cantidad'] ?? 0 }}</small><br>
-                                                        <span class="fw-bold text-success">S/ {{ number_format(($item['cantidad'] ?? 0) * ($item['precio'] ?? 0), 2) }}</span>
+                                        @endphp
+                                        <div class="row g-3">
+                                            @foreach($items as $item)
+                                                <div class="col-md-6">
+                                                    <div class="d-flex justify-content-between align-items-center p-2 bg-white rounded">
+                                                        <div>
+                                                            <i class="fas fa-utensils me-2 text-primary"></i>
+                                                            <strong>{{ $item['nombre'] ?? 'N/A' }}</strong>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <small class="text-muted">Cant: {{ $item['cantidad'] ?? 0 }}</small><br>
+                                                            <span class="fw-bold text-success">S/ {{ number_format(($item['cantidad'] ?? 0) * ($item['precio'] ?? 0), 2) }}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                            @endforeach
+                                        </div>
+                                        <div class="mt-3 pt-3 border-top">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="mb-0">Total del Pedido:</h6>
+                                                <h5 class="mb-0 text-danger fw-bold">S/ {{ number_format($pedido->total, 2) }}</h5>
                                             </div>
-                                        @endforeach
-                                    </div>
-                                    <div class="mt-3 pt-3 border-top">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0">Total del Pedido:</h6>
-                                            <h5 class="mb-0 text-danger fw-bold">S/ {{ number_format($pedido->total, 2) }}</h5>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                </tr>
+                                </td>
+                    </tr>
+                        @endif
                     @endforeach
         </tbody>
     </table>

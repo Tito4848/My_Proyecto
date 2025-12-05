@@ -45,11 +45,15 @@
 
             <div class="mb-3">
                 <label class="form-label">Rol</label>
-                <select name="is_admin" class="form-control @error('is_admin') is-invalid @enderror">
-                    <option value="0" {{ old('is_admin', $usuario->is_admin) == '0' ? 'selected' : '' }}>Usuario normal</option>
-                    <option value="1" {{ old('is_admin', $usuario->is_admin) == '1' ? 'selected' : '' }}>Administrador</option>
+                @php
+                    $rolActual = $usuario->is_admin ? 'admin' : ($usuario->is_employee ? 'empleado' : 'cliente');
+                @endphp
+                <select name="rol" class="form-control @error('rol') is-invalid @enderror">
+                    <option value="cliente" {{ old('rol', $rolActual) == 'cliente' ? 'selected' : '' }}>Cliente</option>
+                    <option value="empleado" {{ old('rol', $rolActual) == 'empleado' ? 'selected' : '' }}>Empleado</option>
+                    <option value="admin" {{ old('rol', $rolActual) == 'admin' ? 'selected' : '' }}>Administrador</option>
                 </select>
-                @error('is_admin')
+                @error('rol')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>

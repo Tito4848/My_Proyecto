@@ -24,6 +24,12 @@
                     </x-nav-link>
 
                     <!-- Menú con Dropdown -->
+                    @php
+                        $user = auth()->user();
+                        $esAdmin = $user && $user->is_admin;
+                    @endphp
+
+                    @if(!$esAdmin)
                     <x-dropdown align="left" width="64">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-50 focus:outline-none transition ease-in-out duration-150 {{ request()->routeIs('menu') || request()->routeIs('delivery') || request()->routeIs('carrito') ? 'text-gray-900 bg-gray-50' : '' }}">
@@ -72,6 +78,7 @@
                             </div>
                         </x-slot>
                     </x-dropdown>
+                    @endif
 
                     <x-nav-link :href="route('sobre-nosotros')" :active="request()->routeIs('sobre-nosotros')" class="d-flex align-items-center">
                         <i class="fas fa-info-circle me-1"></i>{{ __('Sobre Nosotros') }}
@@ -81,14 +88,17 @@
                         <i class="fas fa-envelope me-1"></i>{{ __('Contacto') }}
                     </x-nav-link>
 
+                    @if(!$esAdmin)
                     <x-nav-link :href="route('reserva')" :active="request()->routeIs('reserva')" class="d-flex align-items-center">
                         <i class="fas fa-calendar-check me-1"></i>{{ __('Reservas') }}
                     </x-nav-link>
+                    @endif
                 </div>
             </div>
 
             <!-- Settings / Admin / Auth Links -->
             <div class="hidden sm:flex sm:items-center sm:ms-6 gap-3">
+                @if(!$esAdmin)
                 <!-- Carrito con contador -->
                 <a href="{{ route('carrito') }}" class="relative inline-flex items-center px-3 py-2 text-gray-600 hover:text-gray-800 transition ease-in-out duration-150">
                     <i class="fas fa-shopping-cart text-xl"></i>
@@ -101,11 +111,12 @@
                         </span>
                     @endif
                 </a>
+                @endif
 
                 @auth
 
                     {{-- 🔥 PANEL ADMIN SOLO SI ES ADMIN --}}
-                    @if(auth()->user()->is_admin)
+                    @if($esAdmin)
                         <a href="{{ route('admin.dashboard') }}"
                            class="text-gray-600 hover:text-gray-800 px-3 mr-3">
                             Panel Administrador
@@ -142,6 +153,7 @@
                                 <p class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</p>
                             </div>
                             
+                            @if(!$esAdmin)
                             <x-dropdown-link :href="route('perfil')" class="flex items-center">
                                 <i class="fas fa-user me-3 text-primary" style="width: 20px;"></i>
                                 <span>{{ __('Mi Perfil') }}</span>
@@ -156,6 +168,7 @@
                                 <i class="fas fa-calendar-check me-3 text-warning" style="width: 20px;"></i>
                                 <span>{{ __('Mis Reservas') }}</span>
                             </x-dropdown-link>
+                            @endif
 
                             <!-- Logout -->
                             <form method="POST" action="{{ route('logout') }}">
@@ -207,6 +220,7 @@
                 Menú
             </div>
 
+            @if(!$esAdmin)
             <x-responsive-nav-link :href="route('menu')" :active="request()->routeIs('menu')">
                 <i class="fas fa-utensils me-2"></i>{{ __('Ver Menú') }}
             </x-responsive-nav-link>
@@ -236,6 +250,7 @@
             <x-responsive-nav-link :href="route('reserva')" :active="request()->routeIs('reserva')">
                 <i class="fas fa-calendar-check me-2"></i>{{ __('Reservas') }}
             </x-responsive-nav-link>
+            @endif
 
             {{-- 🔥 PANEL ADMIN EN RESPONSIVE --}}
             @auth

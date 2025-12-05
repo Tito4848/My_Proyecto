@@ -39,6 +39,7 @@
                                     <th><i class="fas fa-hashtag me-2"></i>ID</th>
                                     <th><i class="fas fa-calendar me-2"></i>Fecha</th>
                                     <th><i class="fas fa-money-bill-wave me-2"></i>Total</th>
+                                    <th><i class="fas fa-credit-card me-2"></i>Pago</th>
                                     <th><i class="fas fa-info-circle me-2"></i>Estado</th>
                                     <th><i class="fas fa-map-marker-alt me-2"></i>Dirección</th>
                                     <th class="text-center"><i class="fas fa-cog me-2"></i>Acciones</th>
@@ -53,6 +54,11 @@
                                         <small class="text-muted">{{ $pedido->created_at->format('H:i') }}</small>
                                     </td>
                                     <td class="fw-bold text-success">S/ {{ number_format($pedido->total ?? 0, 2) }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary px-3 py-2 text-uppercase">
+                                            {{ $pedido->metodo_pago ?? 'N/A' }}
+                                        </span>
+                                    </td>
                                     <td>
                                         @php
                                             $colors = [
@@ -75,13 +81,23 @@
                                     </td>
                                     <td>
                                         <small class="text-muted">
-                                            {{ Str::limit($pedido->direccion ?? 'N/A', 30) }}
+                                            @php
+                                                $direccion = $pedido->direccion_entrega 
+                                                    ?? (str_starts_with($pedido->direccion ?? '', 'Pago con') 
+                                                        ? 'Recoger en restaurante' 
+                                                        : ($pedido->direccion ?? 'N/A'));
+                                            @endphp
+                                            {{ Str::limit($direccion, 30) }}
                                         </small>
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('profile.edit') }}" class="btn btn-sm btn-modern btn-primary hover-scale">
-                                            <i class="fas fa-eye me-1"></i> Ver Detalles
-                                        </a>
+                                        @if($pedido->direccion_entrega)
+                                            <a href="{{ route('profile.edit') }}" class="btn btn-sm btn-modern btn-primary hover-scale">
+                                                <i class="fas fa-eye me-1"></i> Ver Detalles
+                                            </a>
+                                        @else
+                                            <span class="text-muted small">Solo para delivery</span>
+                                        @endif
                                     </td>
                                 </tr>
                                 @endforeach

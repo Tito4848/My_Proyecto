@@ -321,7 +321,7 @@
                                                 title="Ver detalles">
                                             <i class="fas fa-eye me-1"></i> Detalles
                                         </button>
-                                        @if($pedido->codigo_seguimiento)
+                                        @if($pedido->direccion_entrega && $pedido->codigo_seguimiento)
                                         <a href="{{ route('seguimiento', $pedido->codigo_seguimiento) }}" 
                                            class="btn btn-sm btn-modern btn-success hover-scale"
                                            title="Seguimiento en tiempo real">
