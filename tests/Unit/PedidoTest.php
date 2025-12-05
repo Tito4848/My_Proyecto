@@ -27,7 +27,10 @@ class PedidoTest extends TestCase
     /** @test */
     public function pedido_tiene_relacion_con_usuario(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'is_admin' => false,
+            'is_employee' => false,
+        ]);
         $pedido = Pedido::factory()->create(['user_id' => $user->id]);
 
         $this->assertEquals($user->id, $pedido->usuario->id);

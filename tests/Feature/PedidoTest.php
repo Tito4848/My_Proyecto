@@ -15,7 +15,10 @@ class PedidoTest extends TestCase
     /** @test */
     public function usuario_autenticado_puede_ver_pantalla_de_pago(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'is_admin' => false,
+            'is_employee' => false,
+        ]);
         $plato = Plato::factory()->create(['precio' => 25.50]);
 
         session(['carrito' => [
@@ -36,7 +39,10 @@ class PedidoTest extends TestCase
     /** @test */
     public function redirige_al_carrito_si_esta_vacio(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'is_admin' => false,
+            'is_employee' => false,
+        ]);
 
         session()->forget('carrito');
 
@@ -49,7 +55,10 @@ class PedidoTest extends TestCase
     /** @test */
     public function usuario_puede_procesar_pago_con_tarjeta(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'is_admin' => false,
+            'is_employee' => false,
+        ]);
         $plato = Plato::factory()->create(['precio' => 25.50]);
 
         session(['carrito' => [
@@ -76,13 +85,17 @@ class PedidoTest extends TestCase
             'user_id' => $user->id,
             'nombre' => 'Juan Pérez',
             'metodo_pago' => 'Tarjeta',
+            'direccion' => 'Recoger en restaurante',
         ]);
     }
 
     /** @test */
     public function usuario_puede_procesar_pago_con_yape(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'is_admin' => false,
+            'is_employee' => false,
+        ]);
         $plato = Plato::factory()->create(['precio' => 30.00]);
 
         session(['carrito' => [
@@ -108,13 +121,17 @@ class PedidoTest extends TestCase
             'user_id' => $user->id,
             'nombre' => 'María García',
             'metodo_pago' => 'Yape',
+            'direccion' => 'Recoger en restaurante',
         ]);
     }
 
     /** @test */
     public function validacion_falla_si_faltan_datos(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'is_admin' => false,
+            'is_employee' => false,
+        ]);
 
         session(['carrito' => [
             ['id' => 1, 'nombre' => 'Test', 'precio' => 10, 'cantidad' => 1],
@@ -130,10 +147,15 @@ class PedidoTest extends TestCase
     /** @test */
     public function puede_obtener_estado_de_pedido(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'is_admin' => false,
+            'is_employee' => false,
+        ]);
         $pedido = Pedido::factory()->create([
             'user_id' => $user->id,
             'estado_seguimiento' => 'preparando',
+            'direccion_entrega' => 'Calle Test 123',
+            'codigo_seguimiento' => 'SAL12345678',
         ]);
 
         $response = $this->get(route('pedidos.estado', $pedido->id));

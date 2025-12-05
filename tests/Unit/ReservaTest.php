@@ -15,7 +15,10 @@ class ReservaTest extends TestCase
     /** @test */
     public function puede_crear_una_reserva(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'is_admin' => false,
+            'is_employee' => false,
+        ]);
         $mesa = Mesa::factory()->create();
 
         $reserva = Reserva::factory()->create([
@@ -33,7 +36,10 @@ class ReservaTest extends TestCase
     /** @test */
     public function reserva_tiene_relacion_con_usuario(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'is_admin' => false,
+            'is_employee' => false,
+        ]);
         $reserva = Reserva::factory()->create(['user_id' => $user->id]);
 
         $this->assertEquals($user->id, $reserva->usuario->id);
